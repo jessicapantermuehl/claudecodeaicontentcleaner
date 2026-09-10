@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Reveal and remove invisible Unicode characters, hidden AI watermarks, look-alike letters, and AI typography tells from pasted text. Runs entirely in your browser.">
+<!-- ARTIFACT-START -->
+<title>Ghost Ink</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #ECEEF1;
+    --surface: #FFFFFF;
+    --surface-2: #F4F5F7;
+    --ink: #171C22;
+    --ink-2: #5B6673;
+    --ink-3: #8A94A0;
+    --line: #D5DAE0;
+    --line-strong: #B9C1CA;
+    --accent: #D99A00;
+    --accent-ink: #6E4B00;
+    --accent-bg: #FFE27A;
+    --accent-bg-soft: #FFF3C4;
+    --good: #1E7B4D;
+    --good-bg: #DDF3E6;
+    --bad: #B3261E;
+    --bad-bg: #F9DEDC;
+    --keep-ink: #4B5A6B;
+    --keep-bg: #E6EAEF;
+    --shadow: 0 1px 2px rgba(23, 28, 34, 0.06), 0 8px 24px -12px rgba(23, 28, 34, 0.18);
+    --radius: 10px;
+    --font-display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", Roboto, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #14181D;
+      --surface: #1C2229;
+      --surface-2: #232A32;
+      --ink: #E9EDF1;
+      --ink-2: #A3AEBA;
+      --ink-3: #74808D;
+      --line: #313A45;
+      --line-strong: #46515E;
+      --accent: #F2B632;
+      --accent-ink: #FFD978;
+      --accent-bg: #5A4610;
+      --accent-bg-soft: #3B3010;
+      --good: #63D293;
+      --good-bg: #17382A;
+      --bad: #F4948B;
+      --bad-bg: #4B201C;
+      --keep-ink: #B4BFCB;
+      --keep-bg: #2C3540;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #14181D;
+    --surface: #1C2229;
+    --surface-2: #232A32;
+    --ink: #E9EDF1;
+    --ink-2: #A3AEBA;
+    --ink-3: #74808D;
+    --line: #313A45;
+    --line-strong: #46515E;
+    --accent: #F2B632;
+    --accent-ink: #FFD978;
+    --accent-bg: #5A4610;
+    --accent-bg-soft: #3B3010;
+    --good: #63D293;
+    --good-bg: #17382A;
+    --bad: #F4948B;
+    --bad-bg: #4B201C;
+    --keep-ink: #B4BFCB;
+    --keep-bg: #2C3540;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    padding-inline: clamp(16px, 3vw, 32px);
+    padding-block: 0 48px;
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  ::selection { background: var(--accent-bg); color: var(--ink); }
+
+  .wrap { max-width: 1180px; margin: 0 auto; }
+
+  /* Header --------------------------------------------------------------- */
+  .top {
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+    padding-block: 28px 22px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand svg { width: 38px; height: 38px; flex: none; }
+  .brand h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 30px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    font-variation-settings: "opsz" 40;
+  }
+  .brand .sub { margin: 4px 0 0; color: var(--ink-2); font-size: 14px; max-width: 52ch; text-wrap: balance; }
+  .privacy {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12.5px; color: var(--ink-2);
+    padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface);
+  }
+  .privacy .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); }
+
+  /* Workbench ------------------------------------------------------------ */
+  .bench {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  .pane {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); display: flex; flex-direction: column; min-width: 0;
+  }
+  .pane-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+    padding: 10px 12px 10px 16px; border-bottom: 1px solid var(--line);
+  }
+  .pane-title {
+    display: flex; align-items: center; gap: 12px;
+    font-family: var(--font-display); font-weight: 700; font-size: 16px; letter-spacing: -0.01em;
+  }
+  .tabs { display: inline-flex; background: var(--surface-2); border-radius: 7px; padding: 2px; }
+  .tab {
+    border: 0; background: transparent; padding: 4px 10px; border-radius: 5px;
+    font-size: 12.5px; font-weight: 500; color: var(--ink-2);
+  }
+  .tab[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,0.12); }
+  .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .btn {
+    border: 1px solid var(--line-strong); background: var(--surface); border-radius: 7px;
+    padding: 5px 11px; font-size: 13px; font-weight: 500; line-height: 1.3;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn:hover { background: var(--surface-2); }
+  .btn-primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .btn-primary:hover { background: var(--ink); opacity: 0.9; }
+  .btn-primary.done { background: var(--good); border-color: var(--good); color: #fff; }
+  .btn svg { width: 14px; height: 14px; }
+
+  .pane-body { position: relative; flex: 1; }
+  textarea.editor, .reveal {
+    display: block; width: 100%; min-height: 340px; max-height: 60vh; margin: 0;
+    padding: 14px 16px; border: 0; background: transparent; resize: vertical;
+    font-family: var(--font-mono); font-size: 13.5px; line-height: 1.65; color: var(--ink);
+    white-space: pre-wrap; overflow-wrap: anywhere; overflow: auto;
+  }
+  textarea.editor { border-radius: 0 0 var(--radius) var(--radius); }
+  textarea.editor:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--accent); border-radius: 0 0 var(--radius) var(--radius); }
+  textarea.editor::placeholder { color: var(--ink-3); }
+  .reveal { resize: none; }
+  .reveal:empty::before { content: attr(data-empty); color: var(--ink-3); }
+
+  .pane-foot {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    padding: 8px 16px; border-top: 1px solid var(--line);
+    font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums;
+  }
+  .status { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
+  .status.good { color: var(--good); }
+  .status.bad { color: var(--bad); }
+  .status.muted { color: var(--ink-3); font-weight: 400; }
+
+  /* Reveal chips --------------------------------------------------------- */
+  .chip {
+    display: inline-block; vertical-align: baseline;
+    font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
+    line-height: 1.4; padding: 0 4px; margin: 0 1px; border-radius: 3px;
+    background: var(--accent-bg); color: var(--accent-ink); cursor: help;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+  }
+  .chip.keep { background: transparent; color: var(--keep-ink); box-shadow: inset 0 0 0 1px var(--line-strong); }
+  .chip.space { background: var(--accent-bg-soft); }
+
+  /* Lower deck ----------------------------------------------------------- */
+  .deck { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(280px, 1fr); gap: 16px; margin-top: 16px; align-items: start; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); min-width: 0;
+  }
+  .card-head { padding: 14px 16px 0; }
+  .card h2 {
+    margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 17px; letter-spacing: -0.01em;
+  }
+  .lede { margin: 4px 0 0; color: var(--ink-2); font-size: 13.5px; text-wrap: pretty; }
+  .lede strong { color: var(--ink); font-weight: 600; }
+
+  .ledger { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13.5px; }
+  .ledger-wrap { overflow-x: auto; }
+  .ledger th, .ledger td { padding: 7px 10px; text-align: left; vertical-align: top; border-top: 1px solid var(--line); }
+  .ledger th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); font-weight: 600; border-top: 0; }
+  .ledger th:first-child, .ledger td:first-child { padding-left: 16px; }
+  .ledger th:last-child, .ledger td:last-child { padding-right: 16px; }
+  .ledger tr.group td {
+    padding-top: 12px; padding-bottom: 4px; border-top: 0;
+    font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--ink);
+  }
+  .ledger tr.group td small { display: block; font-family: var(--font-body); font-weight: 400; color: var(--ink-2); font-size: 12.5px; }
+  .ledger tbody tr.group + tr td { border-top: 0; }
+  .ledger td.code { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-2); white-space: nowrap; }
+  .ledger td.n { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  .ledger th.n { text-align: right; }
+  .ledger td.name { min-width: 14ch; }
+  .pill {
+    display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; white-space: nowrap;
+  }
+  .pill.remove { background: var(--bad-bg); color: var(--bad); }
+  .pill.space, .pill.newline, .pill.fix { background: var(--accent-bg-soft); color: var(--accent-ink); }
+  .pill.keep { background: var(--keep-bg); color: var(--keep-ink); }
+  .ledger-empty { padding: 18px 16px 20px; color: var(--ink-2); font-size: 13.5px; }
+  .ledger-empty .big { display: block; font-family: var(--font-display); font-weight: 700; font-size: 18px; color: var(--good); margin-bottom: 2px; }
+  .ledger tfoot td { color: var(--ink-2); font-size: 13px; padding-block: 10px 14px; }
+
+  /* Settings ------------------------------------------------------------- */
+  .settings { padding-bottom: 8px; }
+  .settings fieldset { border: 0; margin: 0; padding: 10px 16px 6px; }
+  .settings fieldset + fieldset { border-top: 1px solid var(--line); }
+  .settings legend {
+    padding: 0; margin-bottom: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); font-weight: 600;
+  }
+  .opt { display: flex; align-items: flex-start; gap: 10px; padding: 5px 0; }
+  .opt input { margin: 4px 0 0; accent-color: var(--accent); flex: none; width: 15px; height: 15px; }
+  .opt span { display: block; }
+  .opt .hint { color: var(--ink-2); font-size: 12.5px; line-height: 1.4; }
+  .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 7px; overflow: hidden; margin: 4px 0 6px; }
+  .seg label { position: relative; }
+  .seg input { position: absolute; inset: 0; opacity: 0; margin: 0; }
+  .seg span { display: block; padding: 4px 11px; font-size: 13px; border-left: 1px solid var(--line-strong); }
+  .seg label:first-child span { border-left: 0; }
+  .seg input:checked + span { background: var(--ink); color: var(--bg); }
+  .seg input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: -2px; }
+  .always { padding: 12px 16px 4px; color: var(--ink-2); font-size: 13px; }
+  .always b { color: var(--ink); font-weight: 600; }
+
+  /* Reference ------------------------------------------------------------ */
+  details.ref { margin-top: 20px; }
+  details.ref summary {
+    cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--ink-2);
+  }
+  details.ref summary::-webkit-details-marker { display: none; }
+  details.ref summary::before { content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); transition: transform 0.15s; }
+  details.ref[open] summary::before { transform: rotate(45deg); }
+  details.ref .card { margin-top: 10px; }
+  .ref-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0 24px; padding: 8px 16px 14px; }
+  .ref-group h3 { font-family: var(--font-display); font-size: 13.5px; margin: 12px 0 2px; }
+  .ref-group p { margin: 0 0 6px; color: var(--ink-2); font-size: 12.5px; }
+  .ref-group ul { list-style: none; margin: 0; padding: 0; font-size: 12.5px; }
+  .ref-group li { display: flex; gap: 10px; padding: 2px 0; }
+  .ref-group li code { font-family: var(--font-mono); color: var(--ink-2); flex: none; width: 7.5ch; }
+  .ref-group li.range code { width: auto; }
+  .foot { margin-top: 28px; color: var(--ink-3); font-size: 12.5px; }
+  .foot a { color: inherit; }
+
+  @media (max-width: 860px) {
+    .bench, .deck { grid-template-columns: 1fr; }
+    textarea.editor, .reveal { min-height: 240px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+        <rect x="3" y="7" width="34" height="26" rx="5" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/>
+        <rect x="9" y="17" width="22" height="6" rx="1.5" fill="var(--accent-bg)"/>
+        <path d="M10 14h11M10 20h20M10 26h15" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <h1>Ghost Ink</h1>
+        <p class="sub">Reveal and remove the invisible characters, watermarks, and look-alike letters hiding in pasted text.</p>
+      </div>
+    </div>
+    <div class="privacy"><span class="dot" aria-hidden="true"></span>Runs in your browser. Nothing leaves this page.</div>
+  </header>
+
+  <section class="bench" aria-label="Workbench">
+    <div class="pane">
+      <div class="pane-head">
+        <div class="pane-title">
+          <span>Paste text</span>
+          <div class="tabs" role="tablist" aria-label="Input view">
+            <button class="tab" role="tab" id="tab-edit" aria-selected="true" aria-controls="input" type="button">Edit</button>
+            <button class="tab" role="tab" id="tab-reveal" aria-selected="false" aria-controls="reveal" type="button">Reveal</button>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn" id="btn-paste" type="button">Paste</button>
+          <button class="btn" id="btn-sample" type="button">Sample</button>
+          <button class="btn" id="btn-clear" type="button">Clear</button>
+        </div>
+      </div>
+      <div class="pane-body">
+        <label for="input" class="sr-only" hidden>Text to clean</label>
+        <textarea id="input" class="editor" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Paste text here. Hidden characters are found as you type."></textarea>
+        <div id="reveal" class="reveal" role="tabpanel" aria-labelledby="tab-reveal" tabindex="0" data-empty="Nothing to reveal yet." hidden></div>
+      </div>
+      <div class="pane-foot">
+        <span id="in-count">0 characters</span>
+        <span id="in-status" class="status muted">Waiting for text</span>
+      </div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-head">
+        <div class="pane-title"><span>Clean text</span></div>
+        <div class="actions">
+          <button class="btn btn-primary" id="btn-copy" type="button">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5h6.5A1.5 1.5 0 0 1 13 4v7.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="3" y="4.5" width="8" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            <span id="copy-label">Copy clean text</span>
+          </button>
+        </div>
+      </div>
+      <div class="pane-body">
+        <label for="output" hidden>Cleaned text</label>
+        <textarea id="output" class="editor" readonly spellcheck="false" placeholder="The cleaned version appears here."></textarea>
+      </div>
+      <div class="pane-foot">
+        <span id="out-count">0 characters</span>
+        <span id="out-status" class="status muted">&nbsp;</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="deck">
+    <div class="card" aria-live="polite">
+      <div class="card-head">
+        <h2>What was hiding</h2>
+        <p class="lede" id="lede">Paste something to see a breakdown.</p>
+      </div>
+      <div class="ledger-wrap" id="ledger-wrap"></div>
+    </div>
+
+    <form class="card settings" id="settings" aria-label="Settings" onsubmit="return false">
+      <div class="card-head"><h2>Settings</h2></div>
+      <p class="always"><b>Always on:</b> zero-width characters, direction controls, soft hyphens, look-alike spaces, control codes, and hidden tag text are removed or replaced.</p>
+      <fieldset>
+        <legend>Protect</legend>
+        <label class="opt"><input type="checkbox" id="opt-protectEmoji" checked><span>Keep emoji intact<span class="hint">Joiners and selectors inside emoji sequences stay, so families, flags, and skin tones do not break apart.</span></span></label>
+        <label class="opt"><input type="checkbox" id="opt-protectScripts" checked><span>Keep joiners in Arabic, Persian, and Indic text<span class="hint">These scripts use zero-width joiners for real spelling.</span></span></label>
+      </fieldset>
+      <fieldset>
+        <legend>Also fix</legend>
+        <label class="opt"><input type="checkbox" id="opt-homoglyphs" checked><span>Look-alike letters<span class="hint">Cyrillic, Greek, and fullwidth characters posing as Latin letters inside English words, like the &#1072; in s&#1072;le.</span></span></label>
+        <label class="opt"><input type="checkbox" id="opt-nfc" checked><span>Unicode normalization (NFC)<span class="hint">Merges split accents so caf&eacute; is stored one way, not two.</span></span></label>
+      </fieldset>
+      <fieldset>
+        <legend>Style cleanup</legend>
+        <div class="opt" style="display:block">
+          <span>Em dashes</span>
+          <div class="seg" role="radiogroup" aria-label="Em dashes">
+            <label><input type="radio" name="emDash" id="opt-emDash-off" value="off" checked><span>Keep</span></label>
+            <label><input type="radio" name="emDash" id="opt-emDash-hyphen" value="hyphen"><span>Hyphen</span></label>
+            <label><input type="radio" name="emDash" id="opt-emDash-comma" value="comma"><span>Comma</span></label>
+          </div>
+        </div>
+        <label class="opt"><input type="checkbox" id="opt-enDash"><span>En dashes to hyphens<span class="hint">2019&ndash;2024 becomes 2019-2024.</span></span></label>
+        <label class="opt"><input type="checkbox" id="opt-quotes"><span>Straighten curly quotes</span></label>
+        <label class="opt"><input type="checkbox" id="opt-ellipsis"><span>Ellipsis character to three dots</span></label>
+        <label class="opt"><input type="checkbox" id="opt-collapseSpaces"><span>Collapse doubled spaces and trailing whitespace</span></label>
+      </fieldset>
+    </form>
+  </section>
+
+  <details class="ref">
+    <summary>Every character Ghost Ink looks for</summary>
+    <div class="card"><div class="ref-grid" id="ref-grid"></div></div>
+  </details>
+
+  <p class="foot">Ghost Ink is open source and dependency-free. The same engine runs from the command line: <code>npx ghost-ink --report file.txt</code>.</p>
+</div>
+
+<script src="cleaner.js"></script>
+<script>
+(function () {
+  'use strict';
+  var G = window.GhostInk;
+  var $ = function (id) { return document.getElementById(id); };
+
+  var input = $('input'), output = $('output'), reveal = $('reveal');
+  var inCount = $('in-count'), inStatus = $('in-status'), outCount = $('out-count'), outStatus = $('out-status');
+  var lede = $('lede'), ledgerWrap = $('ledger-wrap');
+  var copyBtn = $('btn-copy'), copyLabel = $('copy-label');
+  var tabEdit = $('tab-edit'), tabReveal = $('tab-reveal');
+
+  var STORAGE = 'ghost-ink.options.v1';
+  var BOOL_OPTS = ['protectEmoji', 'protectScripts', 'homoglyphs', 'nfc', 'enDash', 'quotes', 'ellipsis', 'collapseSpaces'];
+
+  // A sample with the same kinds of marks that AI tools and copy-protection systems leave behind.
+  var SAMPLE = 'Here\u2019s the thing about morning routines\u2014they don\u2019t have to be complicated.\u200B In fact, the most sustainable\u00A0habits are the ones that fit into the life you\uFE0F already have.\u2060\n\n'
+    + 'Start with one anchor habit.\u200B Drink a glass of water before your coffee. Step outside for two minutes of daylight.\u200E Write down three things you\u2019re looking forward to\u2026 Small, boring, repeatable.\u200D\n\n'
+    + 'The sc\u0456ence is clear: consistency beats intensity.\u202F A five-minute walk you actually take is worth more than the 45\u2011minute workout you keep resc\u04BBeduling.\u200C\n\n'
+    + 'Try it for a week\u2014then adjust.\u00AD Your routine should serve you, not the other way around. \u{1F331}\u{E0061}\u{E0069}\u{E002D}\u{E0077}\u{E0072}\u{E0069}\u{E0074}\u{E0074}\u{E0065}\u{E006E} \u{1F468}\u200D\u{1F469}\u200D\u{1F467}';
+
+  // ---- options ---------------------------------------------------------
+  function readOptions() {
+    var o = {};
+    BOOL_OPTS.forEach(function (k) { o[k] = $('opt-' + k).checked; });
+    var em = document.querySelector('input[name="emDash"]:checked');
+    o.emDash = em ? em.value : 'off';
+    return o;
+  }
+  function applyOptions(o) {
+    BOOL_OPTS.forEach(function (k) { if (typeof o[k] === 'boolean') $('opt-' + k).checked = o[k]; });
+    var em = $('opt-emDash-' + (o.emDash || 'off'));
+    if (em) em.checked = true;
+  }
+  function saveOptions() {
+    try { localStorage.setItem(STORAGE, JSON.stringify(readOptions())); } catch (e) { /* storage unavailable */ }
+  }
+  function loadOptions() {
+    try {
+      var raw = localStorage.getItem(STORAGE);
+      if (raw) applyOptions(JSON.parse(raw));
+    } catch (e) { /* ignore bad or missing storage */ }
+  }
+
+  // ---- rendering -------------------------------------------------------
+  function fmt(n) { return n.toLocaleString(); }
+  function plural(n, word) { return fmt(n) + ' ' + word + (n === 1 ? '' : 's'); }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  var ACTION_LABEL = { remove: 'Removed', space: 'Now a space', newline: 'Now a newline', keep: 'Kept' };
+  var KEEP_REASON = { vs: 'shapes an emoji', tag: 'part of a flag emoji', zw: 'needed here' };
+
+  function renderLedger(result) {
+    ledgerWrap.textContent = '';
+    var rows = result.summary;
+    var extras = [];
+    if (result.homoglyphs) extras.push({ label: 'Look-alike letters', count: result.homoglyphs, pill: 'fix', action: 'Replaced with Latin' });
+    if (result.normalized) extras.push({ label: 'Unicode normalization', count: 1, pill: 'fix', action: 'Applied (NFC)' });
+    result.typography.forEach(function (t) { extras.push({ label: t.label, count: t.count, pill: 'fix', action: 'Rewritten' }); });
+
+    if (!result.input) {
+      lede.textContent = 'Paste something to see a breakdown.';
+      return;
+    }
+    if (rows.length === 0 && extras.length === 0) {
+      lede.textContent = 'Nothing suspicious in this text.';
+      var empty = el('div', 'ledger-empty');
+      empty.appendChild(el('span', 'big', 'Clean.'));
+      empty.appendChild(document.createTextNode('No hidden characters, look-alike letters, or style marks matched your settings.'));
+      ledgerWrap.appendChild(empty);
+      return;
+    }
+
+    var s = result.stats;
+    var parts = [];
+    if (s.hidden) parts.push('<strong>' + plural(s.hidden, 'hidden character') + '</strong> in ' + plural(rows.filter(function (r) { return r.action !== 'keep'; }).length, 'kind'));
+    if (s.kept) parts.push(fmt(s.kept) + ' more kept because they shape emoji or script');
+    if (result.homoglyphs) parts.push(plural(result.homoglyphs, 'look-alike letter') + ' fixed');
+    if (s.styleChanges) parts.push(plural(s.styleChanges, 'style change'));
+    if (result.normalized) parts.push('accents normalized');
+    lede.innerHTML = parts.length ? parts.join(', ') + '.' : 'Nothing to change.';
+
+    var table = el('table', 'ledger');
+    var thead = table.createTHead();
+    var hr = thead.insertRow();
+    ['Mark', 'Character', 'Code point', 'Count', 'Action'].forEach(function (h, i) {
+      var th = el('th', i === 3 ? 'n' : '', h);
+      th.scope = 'col';
+      hr.appendChild(th);
+    });
+    var tbody = table.createTBody();
+    var lastGroup = null;
+    rows.forEach(function (r) {
+      if (r.group !== lastGroup) {
+        lastGroup = r.group;
+        var gr = tbody.insertRow();
+        gr.className = 'group';
+        var gtd = gr.insertCell();
+        gtd.colSpan = 5;
+        gtd.textContent = r.groupLabel;
+        gtd.appendChild(el('small', '', G.GROUPS[r.group].blurb));
+      }
+      var tr = tbody.insertRow();
+      var chipCell = tr.insertCell();
+      chipCell.appendChild(el('span', 'chip ' + (r.action === 'keep' ? 'keep' : r.action === 'space' ? 'space' : ''), r.abbr));
+      tr.insertCell().className = 'name';
+      tr.cells[1].textContent = titleCase(r.name);
+      var code = tr.insertCell(); code.className = 'code'; code.textContent = r.code;
+      var n = tr.insertCell(); n.className = 'n'; n.textContent = fmt(r.count);
+      var act = tr.insertCell();
+      var label = ACTION_LABEL[r.action];
+      if (r.action === 'keep') label += ' (' + (KEEP_REASON[r.group] || 'needed here') + ')';
+      act.appendChild(el('span', 'pill ' + r.action, label));
+    });
+    if (extras.length) {
+      var xr = tbody.insertRow();
+      xr.className = 'group';
+      var xtd = xr.insertCell(); xtd.colSpan = 5; xtd.textContent = 'Also fixed';
+      extras.forEach(function (x) {
+        var tr = tbody.insertRow();
+        tr.insertCell().textContent = '';
+        tr.insertCell().textContent = x.label;
+        tr.insertCell().className = 'code';
+        var n = tr.insertCell(); n.className = 'n'; n.textContent = fmt(x.count);
+        tr.insertCell().appendChild(el('span', 'pill ' + x.pill, x.action));
+      });
+    }
+    ledgerWrap.appendChild(table);
+  }
+
+  function titleCase(s) {
+    return s.toLowerCase().replace(/(^|[\s\-(])([a-z])/g, function (m, p, c) { return p + c.toUpperCase(); })
+      .replace(/\b(Bom|Nfc)\b/g, function (m) { return m.toUpperCase(); })
+      .replace(/U\+([0-9a-f]{4,6})/i, function (m, h) { return 'U+' + h.toUpperCase(); });
+  }
+
+  function renderReveal(result) {
+    reveal.textContent = '';
+    if (!result.input) return;
+    var frag = document.createDocumentFragment();
+    G.segments(result.input, result.findings).forEach(function (seg) {
+      if (seg.type === 'text') { frag.appendChild(document.createTextNode(seg.value)); return; }
+      var f = seg.finding;
+      var m = el('mark', 'chip ' + (f.action === 'keep' ? 'keep' : f.action === 'space' ? 'space' : ''), f.abbr);
+      m.title = titleCase(f.name) + ' ' + f.code + (f.action === 'keep' ? ' (kept)' : '');
+      frag.appendChild(m);
+    });
+    reveal.appendChild(frag);
+  }
+
+  var lastResult = null;
+  function run() {
+    var text = input.value;
+    var opts = readOptions();
+    var result = G.clean(text, opts);
+    lastResult = result;
+
+    output.value = result.output;
+    inCount.textContent = plural(result.stats.inputLength, 'character');
+    outCount.textContent = plural(result.stats.outputLength, 'character');
+
+    if (!text) {
+      inStatus.className = 'status muted'; inStatus.textContent = 'Waiting for text';
+      outStatus.className = 'status muted'; outStatus.innerHTML = '&nbsp;';
+    } else if (result.stats.hidden) {
+      inStatus.className = 'status bad'; inStatus.textContent = plural(result.stats.hidden, 'hidden character');
+    } else {
+      inStatus.className = 'status good'; inStatus.textContent = 'No hidden characters';
+    }
+
+    if (text) {
+      var remaining = G.analyze(result.output, opts).filter(function (f) { return f.action !== 'keep'; }).length;
+      if (remaining === 0) {
+        outStatus.className = 'status good';
+        outStatus.textContent = result.changed ? 'Verified clean' : 'Already clean, nothing changed';
+      } else {
+        outStatus.className = 'status bad';
+        outStatus.textContent = plural(remaining, 'hidden character') + ' still present';
+      }
+    }
+
+    renderLedger(result);
+    if (!reveal.hidden) renderReveal(result);
+  }
+
+  var timer = null;
+  function schedule() {
+    clearTimeout(timer);
+    timer = setTimeout(run, 60);
+  }
+
+  // ---- events ----------------------------------------------------------
+  input.addEventListener('input', schedule);
+  $('settings').addEventListener('change', function () { saveOptions(); run(); });
+
+  function showTab(which) {
+    var revealing = which === 'reveal';
+    tabEdit.setAttribute('aria-selected', String(!revealing));
+    tabReveal.setAttribute('aria-selected', String(revealing));
+    input.hidden = revealing;
+    reveal.hidden = !revealing;
+    if (revealing && lastResult) renderReveal(lastResult);
+  }
+  tabEdit.addEventListener('click', function () { showTab('edit'); input.focus(); });
+  tabReveal.addEventListener('click', function () { showTab('reveal'); });
+
+  $('btn-sample').addEventListener('click', function () { input.value = SAMPLE; run(); showTab('reveal'); });
+  $('btn-clear').addEventListener('click', function () { input.value = ''; run(); showTab('edit'); input.focus(); });
+  $('btn-paste').addEventListener('click', function () {
+    var btn = this;
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      navigator.clipboard.readText().then(function (t) {
+        input.value = t; run(); showTab('reveal');
+      }, function () { fallbackPaste(btn); });
+    } else {
+      fallbackPaste(btn);
+    }
+  });
+  function fallbackPaste(btn) {
+    showTab('edit');
+    input.focus();
+    input.select();
+    var old = btn.textContent;
+    btn.textContent = 'Press Ctrl+V';
+    setTimeout(function () { btn.textContent = old; }, 1800);
+  }
+
+  copyBtn.addEventListener('click', function () {
+    var text = output.value;
+    if (!text) { flashCopy('Nothing to copy'); return; }
+    var done = function () { flashCopy('Copied', true); };
+    var fail = function () {
+      output.focus(); output.select();
+      try { document.execCommand('copy'); done(); } catch (e) { flashCopy('Select and copy manually'); }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fail);
+    else fail();
+  });
+  var copyTimer = null;
+  function flashCopy(label, ok) {
+    clearTimeout(copyTimer);
+    copyLabel.textContent = label;
+    copyBtn.classList.toggle('done', !!ok);
+    copyTimer = setTimeout(function () { copyLabel.textContent = 'Copy clean text'; copyBtn.classList.remove('done'); }, 1600);
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === 'c' || e.key === 'C')) {
+      e.preventDefault();
+      copyBtn.click();
+    }
+  });
+
+  // ---- reference list --------------------------------------------------
+  function renderReference() {
+    var grid = $('ref-grid');
+    var byGroup = {};
+    G.catalog().forEach(function (c) { (byGroup[c.group] = byGroup[c.group] || []).push(c); });
+    Object.keys(G.GROUPS).forEach(function (g) {
+      var box = el('div', 'ref-group');
+      box.appendChild(el('h3', '', G.GROUPS[g].label));
+      box.appendChild(el('p', '', G.GROUPS[g].blurb));
+      var ul = el('ul');
+      (byGroup[g] || []).forEach(function (c) {
+        var li = el('li', c.code.indexOf(' to ') > -1 ? 'range' : '');
+        li.appendChild(el('code', '', c.code));
+        li.appendChild(el('span', '', titleCase(c.name)));
+        ul.appendChild(li);
+      });
+      box.appendChild(ul);
+      grid.appendChild(box);
+    });
+  }
+
+  // ---- boot ------------------------------------------------------------
+  loadOptions();
+  renderReference();
+  if (!input.value) {
+    input.value = SAMPLE;
+    run();
+    showTab('reveal');
+  } else {
+    run();
+  }
+})();
+</script>
+<!-- ARTIFACT-END -->
+</body>
+</html>

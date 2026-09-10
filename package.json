@@ -1,0 +1,33 @@
+{
+  "name": "ghost-ink",
+  "version": "1.0.0",
+  "description": "Find and remove invisible Unicode characters, hidden AI watermarks, look-alike letters, and AI typography tells from text. Runs in the browser or from the command line.",
+  "license": "MIT",
+  "main": "cleaner.js",
+  "browser": "cleaner.js",
+  "bin": {
+    "ghost-ink": "bin/ghost-ink.js"
+  },
+  "files": [
+    "cleaner.js",
+    "index.html",
+    "bin/"
+  ],
+  "scripts": {
+    "test": "node --test test/cleaner.test.js",
+    "start": "node scripts/serve.js",
+    "build": "node scripts/build.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "unicode",
+    "zero-width",
+    "invisible-characters",
+    "watermark",
+    "ai-text",
+    "homoglyph",
+    "text-cleaner"
+  ]
+}
