@@ -30,6 +30,9 @@
     --bad-bg: #F9DEDC;
     --keep-ink: #4B5A6B;
     --keep-bg: #E6EAEF;
+    --typo-ink: #1F5F8B;
+    --typo-bg: #DCEBF7;
+    --typo-line: #B9D4EA;
     --shadow: 0 1px 2px rgba(23, 28, 34, 0.06), 0 8px 24px -12px rgba(23, 28, 34, 0.18);
     --radius: 10px;
     --font-display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
@@ -57,6 +60,9 @@
       --bad-bg: #4B201C;
       --keep-ink: #B4BFCB;
       --keep-bg: #2C3540;
+      --typo-ink: #9CCBEF;
+      --typo-bg: #1B3448;
+      --typo-line: #2B4D68;
       --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
     }
   }
@@ -80,6 +86,9 @@
     --bad-bg: #4B201C;
     --keep-ink: #B4BFCB;
     --keep-bg: #2C3540;
+    --typo-ink: #9CCBEF;
+    --typo-bg: #1B3448;
+    --typo-line: #2B4D68;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
   }
 
@@ -194,6 +203,17 @@
   }
   .chip.keep { background: transparent; color: var(--keep-ink); box-shadow: inset 0 0 0 1px var(--line-strong); }
   .chip.space { background: var(--accent-bg-soft); }
+  .chip.typo { background: var(--typo-bg); color: var(--typo-ink); box-shadow: inset 0 0 0 1px var(--typo-line); }
+  .chip.typo.kept { background: transparent; }
+  .chip .g { font-family: var(--font-body); font-size: 12px; font-weight: 600; letter-spacing: 0; margin-right: 3px; }
+  .reveal-bar {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 8px 16px; border-bottom: 1px solid var(--line); background: var(--surface-2);
+    font-size: 12px; color: var(--ink-2);
+  }
+  .legend-item { display: inline-flex; align-items: center; gap: 5px; }
+  .reveal-toggle { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .reveal-toggle input { accent-color: var(--accent); margin: 0; }
 
   /* Lower deck ----------------------------------------------------------- */
   .deck { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(280px, 1fr); gap: 16px; margin-top: 16px; align-items: start; }
@@ -229,6 +249,9 @@
   .pill.remove { background: var(--bad-bg); color: var(--bad); }
   .pill.space, .pill.newline, .pill.fix { background: var(--accent-bg-soft); color: var(--accent-ink); }
   .pill.keep { background: var(--keep-bg); color: var(--keep-ink); }
+  .pill.rewrite { background: var(--typo-bg); color: var(--typo-ink); }
+  .pill code { font-family: var(--font-mono); font-weight: 600; }
+  .ledger td.glyph { font-size: 16px; line-height: 1.2; text-align: center; width: 2.2em; }
   .ledger-empty { padding: 18px 16px 20px; color: var(--ink-2); font-size: 13.5px; }
   .ledger-empty .big { display: block; font-family: var(--font-display); font-weight: 700; font-size: 18px; color: var(--good); margin-bottom: 2px; }
   .ledger tfoot td { color: var(--ink-2); font-size: 13px; padding-block: 10px 14px; }
@@ -319,7 +342,15 @@
       <div class="pane-body">
         <label for="input" class="sr-only" hidden>Text to clean</label>
         <textarea id="input" class="editor" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Paste text here. Hidden characters are found as you type."></textarea>
-        <div id="reveal" class="reveal" role="tabpanel" aria-labelledby="tab-reveal" tabindex="0" data-empty="Nothing to reveal yet." hidden></div>
+        <div id="reveal-panel" role="tabpanel" aria-labelledby="tab-reveal" hidden>
+          <div class="reveal-bar">
+            <span class="legend-item"><span class="chip">ZWSP</span> hidden, removed</span>
+            <span class="legend-item"><span class="chip keep">ZWJ</span> hidden, kept</span>
+            <span class="legend-item"><span class="chip typo">U+2019</span> non-keyboard</span>
+            <label class="reveal-toggle"><input type="checkbox" id="reveal-typo" checked> Mark non-keyboard characters</label>
+          </div>
+          <div id="reveal" class="reveal" tabindex="0" data-empty="Nothing to reveal yet."></div>
+        </div>
       </div>
       <div class="pane-foot">
         <span id="in-count">0 characters</span>
@@ -359,7 +390,7 @@
 
     <form class="card settings" id="settings" aria-label="Settings" onsubmit="return false">
       <div class="card-head"><h2>Settings</h2></div>
-      <p class="always"><b>Always on:</b> zero-width characters, direction controls, soft hyphens, look-alike spaces, control codes, and hidden tag text are removed or replaced.</p>
+      <p class="always"><b>Always on:</b> zero-width characters, direction controls, soft hyphens, look-alike spaces, control codes, and hidden tag text are removed or replaced. Every other character a keyboard cannot type is listed below so you can decide.</p>
       <fieldset>
         <legend>Protect</legend>
         <label class="opt"><input type="checkbox" id="opt-protectEmoji" checked><span>Keep emoji intact<span class="hint">Joiners and selectors inside emoji sequences stay, so families, flags, and skin tones do not break apart.</span></span></label>
@@ -371,18 +402,24 @@
         <label class="opt"><input type="checkbox" id="opt-nfc" checked><span>Unicode normalization (NFC)<span class="hint">Merges split accents so caf&eacute; is stored one way, not two.</span></span></label>
       </fieldset>
       <fieldset>
-        <legend>Style cleanup</legend>
+        <legend>Rewrite as keyboard characters</legend>
+        <label class="opt"><input type="checkbox" id="opt-quotes" checked><span>Curly quotes and apostrophes<span class="hint">&ldquo; &rdquo; &lsquo; &rsquo; become " and '. The most common tell in pasted AI text.</span></span></label>
         <div class="opt" style="display:block">
           <span>Em dashes</span>
           <div class="seg" role="radiogroup" aria-label="Em dashes">
-            <label><input type="radio" name="emDash" id="opt-emDash-off" value="off" checked><span>Keep</span></label>
-            <label><input type="radio" name="emDash" id="opt-emDash-hyphen" value="hyphen"><span>Hyphen</span></label>
+            <label><input type="radio" name="emDash" id="opt-emDash-off" value="off"><span>Keep</span></label>
+            <label><input type="radio" name="emDash" id="opt-emDash-hyphen" value="hyphen" checked><span>Hyphen</span></label>
             <label><input type="radio" name="emDash" id="opt-emDash-comma" value="comma"><span>Comma</span></label>
           </div>
         </div>
-        <label class="opt"><input type="checkbox" id="opt-enDash"><span>En dashes to hyphens<span class="hint">2019&ndash;2024 becomes 2019-2024.</span></span></label>
-        <label class="opt"><input type="checkbox" id="opt-quotes"><span>Straighten curly quotes</span></label>
-        <label class="opt"><input type="checkbox" id="opt-ellipsis"><span>Ellipsis character to three dots</span></label>
+        <label class="opt"><input type="checkbox" id="opt-dashes" checked><span>Other dashes to hyphens<span class="hint">En dashes, non-breaking hyphens, and minus signs. 2019&ndash;2024 becomes 2019-2024.</span></span></label>
+        <label class="opt"><input type="checkbox" id="opt-ellipsis" checked><span>Ellipsis character to three dots</span></label>
+        <label class="opt"><input type="checkbox" id="opt-symbols" checked><span>Arrows, bullets, and symbols<span class="hint">&rarr; becomes -&gt;, &bull; becomes -, &trade; becomes (TM). Symbols without a plain equivalent are listed but kept.</span></span></label>
+      </fieldset>
+      <fieldset>
+        <legend>Go further</legend>
+        <label class="opt"><input type="checkbox" id="opt-emoji"><span>Remove emoji</span></label>
+        <label class="opt"><input type="checkbox" id="opt-accents"><span>Strip accents from Latin letters<span class="hint">caf&eacute; becomes cafe. Leaves other alphabets alone.</span></span></label>
         <label class="opt"><input type="checkbox" id="opt-collapseSpaces"><span>Collapse doubled spaces and trailing whitespace</span></label>
       </fieldset>
     </form>
@@ -403,14 +440,14 @@
   var G = window.GhostInk;
   var $ = function (id) { return document.getElementById(id); };
 
-  var input = $('input'), output = $('output'), reveal = $('reveal');
+  var input = $('input'), output = $('output'), reveal = $('reveal'), revealPanel = $('reveal-panel'), revealTypo = $('reveal-typo');
   var inCount = $('in-count'), inStatus = $('in-status'), outCount = $('out-count'), outStatus = $('out-status');
   var lede = $('lede'), ledgerWrap = $('ledger-wrap');
   var copyBtn = $('btn-copy'), copyLabel = $('copy-label');
   var tabEdit = $('tab-edit'), tabReveal = $('tab-reveal');
 
-  var STORAGE = 'ghost-ink.options.v1';
-  var BOOL_OPTS = ['protectEmoji', 'protectScripts', 'homoglyphs', 'nfc', 'enDash', 'quotes', 'ellipsis', 'collapseSpaces'];
+  var STORAGE = 'ghost-ink.options.v2';
+  var BOOL_OPTS = ['protectEmoji', 'protectScripts', 'homoglyphs', 'nfc', 'quotes', 'dashes', 'ellipsis', 'symbols', 'emoji', 'accents', 'collapseSpaces'];
 
   // A sample with the same kinds of marks that AI tools and copy-protection systems leave behind.
   var SAMPLE = 'Here\u2019s the thing about morning routines\u2014they don\u2019t have to be complicated.\u200B In fact, the most sustainable\u00A0habits are the ones that fit into the life you\uFE0F already have.\u2060\n\n'
@@ -465,11 +502,12 @@
       lede.textContent = 'Paste something to see a breakdown.';
       return;
     }
-    if (rows.length === 0 && extras.length === 0) {
-      lede.textContent = 'Nothing suspicious in this text.';
+    var nk = result.nonKeyboard;
+    if (rows.length === 0 && extras.length === 0 && nk.length === 0) {
+      lede.textContent = 'Plain keyboard characters only.';
       var empty = el('div', 'ledger-empty');
       empty.appendChild(el('span', 'big', 'Clean.'));
-      empty.appendChild(document.createTextNode('No hidden characters, look-alike letters, or style marks matched your settings.'));
+      empty.appendChild(document.createTextNode('No hidden characters, no look-alike letters, and nothing a keyboard could not have typed.'));
       ledgerWrap.appendChild(empty);
       return;
     }
@@ -477,11 +515,16 @@
     var s = result.stats;
     var parts = [];
     if (s.hidden) parts.push('<strong>' + plural(s.hidden, 'hidden character') + '</strong> in ' + plural(rows.filter(function (r) { return r.action !== 'keep'; }).length, 'kind'));
-    if (s.kept) parts.push(fmt(s.kept) + ' more kept because they shape emoji or script');
+    else parts.push('No hidden characters');
+    if (s.kept) parts.push(fmt(s.kept) + ' kept because they shape emoji or script');
+    if (s.nonKeyboard) {
+      var rewritten = s.nonKeyboard - s.nonKeyboardKept;
+      parts.push('<strong>' + plural(s.nonKeyboard, 'non-keyboard character') + '</strong>' +
+        (rewritten ? ', ' + fmt(rewritten) + ' rewritten' : '') + (s.nonKeyboardKept ? ', ' + fmt(s.nonKeyboardKept) + ' kept' : ''));
+    }
     if (result.homoglyphs) parts.push(plural(result.homoglyphs, 'look-alike letter') + ' fixed');
-    if (s.styleChanges) parts.push(plural(s.styleChanges, 'style change'));
     if (result.normalized) parts.push('accents normalized');
-    lede.innerHTML = parts.length ? parts.join(', ') + '.' : 'Nothing to change.';
+    lede.innerHTML = parts.join('. ') + '.';
 
     var table = el('table', 'ledger');
     var thead = table.createTHead();
@@ -515,11 +558,39 @@
       if (r.action === 'keep') label += ' (' + (KEEP_REASON[r.group] || 'needed here') + ')';
       act.appendChild(el('span', 'pill ' + r.action, label));
     });
-    if (extras.length) {
+    var lastCat = null;
+    nk.forEach(function (r) {
+      if (r.category !== lastCat) {
+        lastCat = r.category;
+        var cr = tbody.insertRow();
+        cr.className = 'group';
+        var ctd = cr.insertCell();
+        ctd.colSpan = 5;
+        ctd.textContent = r.categoryLabel;
+        ctd.appendChild(el('small', '', G.NK_CATEGORIES[r.category].blurb));
+      }
+      var tr = tbody.insertRow();
+      var g = tr.insertCell(); g.className = 'glyph'; g.textContent = r.char;
+      var nm = tr.insertCell(); nm.className = 'name'; nm.textContent = nkLabel(r);
+      var code = tr.insertCell(); code.className = 'code'; code.textContent = r.code;
+      var n = tr.insertCell(); n.className = 'n'; n.textContent = fmt(r.count);
+      var act = tr.insertCell();
+      if (r.action === 'rewrite') {
+        var pill = el('span', 'pill rewrite', 'Now ');
+        pill.appendChild(el('code', '', r.replacement.trim() || r.replacement));
+        act.appendChild(pill);
+      } else if (r.action === 'remove') {
+        act.appendChild(el('span', 'pill remove', 'Removed'));
+      } else {
+        act.appendChild(el('span', 'pill keep', 'Kept'));
+      }
+    });
+    var homoglyphExtras = extras.filter(function (x) { return x.label === 'Look-alike letters' || x.label === 'Unicode normalization'; });
+    if (homoglyphExtras.length) {
       var xr = tbody.insertRow();
       xr.className = 'group';
       var xtd = xr.insertCell(); xtd.colSpan = 5; xtd.textContent = 'Also fixed';
-      extras.forEach(function (x) {
+      homoglyphExtras.forEach(function (x) {
         var tr = tbody.insertRow();
         tr.insertCell().textContent = '';
         tr.insertCell().textContent = x.label;
@@ -531,6 +602,14 @@
     ledgerWrap.appendChild(table);
   }
 
+  function nkLabel(r) {
+    if (r.category === 'emoji') return 'Emoji';
+    if (r.category === 'letter') return 'Letter ' + r.char;
+    if (/^SYMBOL /.test(r.name)) return 'Symbol ' + r.char;
+    if (/^CHARACTER U\+/.test(r.name)) return 'Character';
+    return titleCase(r.name);
+  }
+
   function titleCase(s) {
     return s.toLowerCase().replace(/(^|[\s\-(])([a-z])/g, function (m, p, c) { return p + c.toUpperCase(); })
       .replace(/\b(Bom|Nfc)\b/g, function (m) { return m.toUpperCase(); })
@@ -540,12 +619,28 @@
   function renderReveal(result) {
     reveal.textContent = '';
     if (!result.input) return;
+    var findings = result.findings;
+    if (revealTypo.checked) {
+      // Non-keyboard marks are shown for punctuation and symbols; emoji and letters stay readable as themselves.
+      var nk = G.analyzeNonKeyboard(result.input, readOptions()).filter(function (f) {
+        return f.category !== 'emoji' && f.category !== 'letter';
+      });
+      findings = findings.concat(nk).sort(function (a, b) { return a.index - b.index; });
+    }
     var frag = document.createDocumentFragment();
-    G.segments(result.input, result.findings).forEach(function (seg) {
+    G.segments(result.input, findings).forEach(function (seg) {
       if (seg.type === 'text') { frag.appendChild(document.createTextNode(seg.value)); return; }
       var f = seg.finding;
-      var m = el('mark', 'chip ' + (f.action === 'keep' ? 'keep' : f.action === 'space' ? 'space' : ''), f.abbr);
-      m.title = titleCase(f.name) + ' ' + f.code + (f.action === 'keep' ? ' (kept)' : '');
+      var m;
+      if (f.group === 'nk') {
+        m = el('mark', 'chip typo' + (f.action === 'keep' ? ' kept' : ''));
+        m.appendChild(el('span', 'g', f.char));
+        m.appendChild(document.createTextNode(f.code));
+        m.title = nkLabel(f) + ' ' + f.code + (f.action === 'rewrite' ? ' (now ' + f.replacement + ')' : f.action === 'remove' ? ' (removed)' : ' (kept)');
+      } else {
+        m = el('mark', 'chip ' + (f.action === 'keep' ? 'keep' : f.action === 'space' ? 'space' : ''), f.abbr);
+        m.title = titleCase(f.name) + ' ' + f.code + (f.action === 'keep' ? ' (kept)' : '');
+      }
       frag.appendChild(m);
     });
     reveal.appendChild(frag);
@@ -565,25 +660,36 @@
     if (!text) {
       inStatus.className = 'status muted'; inStatus.textContent = 'Waiting for text';
       outStatus.className = 'status muted'; outStatus.innerHTML = '&nbsp;';
-    } else if (result.stats.hidden) {
-      inStatus.className = 'status bad'; inStatus.textContent = plural(result.stats.hidden, 'hidden character');
     } else {
-      inStatus.className = 'status good'; inStatus.textContent = 'No hidden characters';
+      var bits = [];
+      bits.push(result.stats.hidden ? plural(result.stats.hidden, 'hidden character') : 'No hidden characters');
+      if (result.stats.nonKeyboard) bits.push(plural(result.stats.nonKeyboard, 'non-keyboard character'));
+      inStatus.className = 'status ' + (result.stats.hidden || result.stats.nonKeyboard ? 'bad' : 'good');
+      inStatus.textContent = bits.join(', ');
     }
 
     if (text) {
-      var remaining = G.analyze(result.output, opts).filter(function (f) { return f.action !== 'keep'; }).length;
-      if (remaining === 0) {
-        outStatus.className = 'status good';
-        outStatus.textContent = result.changed ? 'Verified clean' : 'Already clean, nothing changed';
-      } else {
+      var remainingHidden = G.analyze(result.output, opts).filter(function (f) { return f.action !== 'keep'; }).length;
+      var remainingNk = G.analyzeNonKeyboard(result.output, opts);
+      var remainingMarks = remainingNk.filter(function (f) { return f.category !== 'emoji' && f.category !== 'letter'; }).length;
+      var remainingSoft = remainingNk.length - remainingMarks;
+      if (remainingHidden) {
         outStatus.className = 'status bad';
-        outStatus.textContent = plural(remaining, 'hidden character') + ' still present';
+        outStatus.textContent = plural(remainingHidden, 'hidden character') + ' still present';
+      } else if (remainingMarks) {
+        outStatus.className = 'status bad';
+        outStatus.textContent = plural(remainingMarks, 'non-keyboard mark') + ' kept by your settings';
+      } else if (remainingSoft) {
+        outStatus.className = 'status good';
+        outStatus.textContent = 'Clean. ' + plural(remainingSoft, 'emoji or accented letter') + ' kept';
+      } else {
+        outStatus.className = 'status good';
+        outStatus.textContent = result.changed ? 'Verified clean, keyboard characters only' : 'Already clean, nothing changed';
       }
     }
 
     renderLedger(result);
-    if (!reveal.hidden) renderReveal(result);
+    if (!revealPanel.hidden) renderReveal(result);
   }
 
   var timer = null;
@@ -601,11 +707,12 @@
     tabEdit.setAttribute('aria-selected', String(!revealing));
     tabReveal.setAttribute('aria-selected', String(revealing));
     input.hidden = revealing;
-    reveal.hidden = !revealing;
+    revealPanel.hidden = !revealing;
     if (revealing && lastResult) renderReveal(lastResult);
   }
   tabEdit.addEventListener('click', function () { showTab('edit'); input.focus(); });
   tabReveal.addEventListener('click', function () { showTab('reveal'); });
+  revealTypo.addEventListener('change', function () { if (lastResult) renderReveal(lastResult); });
 
   $('btn-sample').addEventListener('click', function () { input.value = SAMPLE; run(); showTab('reveal'); });
   $('btn-clear').addEventListener('click', function () { input.value = ''; run(); showTab('edit'); input.focus(); });

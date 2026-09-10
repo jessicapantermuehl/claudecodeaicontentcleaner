@@ -328,21 +328,204 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Style cleanup (opt-in typography)
+  // Non-keyboard characters: curly quotes, dashes, symbols, emoji, accents
+  // ---------------------------------------------------------------------------
+
+  var NK_CATEGORIES = {
+    quote: { label: 'Curly quotes and apostrophes', blurb: 'Typographic quotes that a keyboard never produces on its own.' },
+    dash: { label: 'Dashes', blurb: 'Em dashes, en dashes, and hyphen variants that are not the plain keyboard hyphen.' },
+    ellipsis: { label: 'Ellipsis', blurb: 'One character standing in for three dots.' },
+    symbol: { label: 'Symbols and punctuation', blurb: 'Arrows, bullets, trademark signs, and other symbols outside plain ASCII.' },
+    emoji: { label: 'Emoji', blurb: 'Counted as whole sequences, so a family or a flag is one item.' },
+    letter: { label: 'Accented and non-Latin letters', blurb: 'Letters outside plain ASCII. Usually legitimate, always worth a look.' },
+    other: { label: 'Other non-keyboard characters', blurb: 'Anything else outside plain ASCII.' }
+  };
+
+  var NK_NAMES = {
+    0x2018: 'LEFT SINGLE QUOTATION MARK', 0x2019: 'RIGHT SINGLE QUOTATION MARK (curly apostrophe)',
+    0x201A: 'SINGLE LOW-9 QUOTATION MARK', 0x201B: 'SINGLE HIGH-REVERSED-9 QUOTATION MARK',
+    0x201C: 'LEFT DOUBLE QUOTATION MARK', 0x201D: 'RIGHT DOUBLE QUOTATION MARK',
+    0x201E: 'DOUBLE LOW-9 QUOTATION MARK', 0x201F: 'DOUBLE HIGH-REVERSED-9 QUOTATION MARK',
+    0x2039: 'SINGLE LEFT-POINTING ANGLE QUOTATION MARK', 0x203A: 'SINGLE RIGHT-POINTING ANGLE QUOTATION MARK',
+    0x00AB: 'LEFT-POINTING DOUBLE ANGLE QUOTATION MARK', 0x00BB: 'RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK',
+    0x2032: 'PRIME', 0x2033: 'DOUBLE PRIME', 0x02BC: 'MODIFIER LETTER APOSTROPHE', 0x00B4: 'ACUTE ACCENT',
+    0x2010: 'HYPHEN', 0x2011: 'NON-BREAKING HYPHEN', 0x2012: 'FIGURE DASH', 0x2013: 'EN DASH', 0x2014: 'EM DASH',
+    0x2015: 'HORIZONTAL BAR', 0x2212: 'MINUS SIGN', 0x2E3A: 'TWO-EM DASH', 0x2E3B: 'THREE-EM DASH', 0x2043: 'HYPHEN BULLET',
+    0x2026: 'HORIZONTAL ELLIPSIS',
+    0x2022: 'BULLET', 0x2023: 'TRIANGULAR BULLET', 0x25E6: 'WHITE BULLET', 0x00B7: 'MIDDLE DOT', 0x2027: 'HYPHENATION POINT',
+    0x2192: 'RIGHTWARDS ARROW', 0x2190: 'LEFTWARDS ARROW', 0x2194: 'LEFT RIGHT ARROW', 0x21D2: 'RIGHTWARDS DOUBLE ARROW',
+    0x2191: 'UPWARDS ARROW', 0x2193: 'DOWNWARDS ARROW', 0x27A1: 'BLACK RIGHTWARDS ARROW',
+    0x2122: 'TRADE MARK SIGN', 0x00A9: 'COPYRIGHT SIGN', 0x00AE: 'REGISTERED SIGN', 0x00B0: 'DEGREE SIGN',
+    0x00D7: 'MULTIPLICATION SIGN', 0x00F7: 'DIVISION SIGN', 0x00B1: 'PLUS-MINUS SIGN', 0x2264: 'LESS-THAN OR EQUAL TO',
+    0x2265: 'GREATER-THAN OR EQUAL TO', 0x2260: 'NOT EQUAL TO', 0x2248: 'ALMOST EQUAL TO', 0x221E: 'INFINITY',
+    0x00BC: 'VULGAR FRACTION ONE QUARTER', 0x00BD: 'VULGAR FRACTION ONE HALF', 0x00BE: 'VULGAR FRACTION THREE QUARTERS',
+    0x2153: 'VULGAR FRACTION ONE THIRD', 0x2154: 'VULGAR FRACTION TWO THIRDS',
+    0x00A7: 'SECTION SIGN', 0x00B6: 'PILCROW SIGN', 0x2020: 'DAGGER', 0x2021: 'DOUBLE DAGGER', 0x2030: 'PER MILLE SIGN',
+    0x20AC: 'EURO SIGN', 0x00A3: 'POUND SIGN', 0x00A5: 'YEN SIGN', 0x00A2: 'CENT SIGN',
+    0x2713: 'CHECK MARK', 0x2717: 'BALLOT X', 0x2610: 'BALLOT BOX', 0x2611: 'BALLOT BOX WITH CHECK',
+    0x00A1: 'INVERTED EXCLAMATION MARK', 0x00BF: 'INVERTED QUESTION MARK', 0x2044: 'FRACTION SLASH',
+    0x02C8: 'MODIFIER LETTER VERTICAL LINE', 0x02BB: 'MODIFIER LETTER TURNED COMMA'
+  };
+
+  var QUOTE_DOUBLE = /[\u201C\u201D\u201E\u201F\u00AB\u00BB\u2033\u301D\u301E]/;
+  var QUOTE_SINGLE = /[\u2018\u2019\u201A\u201B\u2039\u203A\u02BC\u02C8\u2032\u00B4\u02BB]/;
+  var EM_DASHES = /[\u2014\u2015\u2E3A\u2E3B]/;
+  var OTHER_DASHES = /[\u2010\u2011\u2012\u2013\u2212\u2043]/;
+
+  var SYMBOL_MAP = {
+    '\u2192': '->', '\u2190': '<-', '\u2194': '<->', '\u21D2': '=>', '\u27A1': '->',
+    '\u2022': '-', '\u2023': '-', '\u25E6': '-', '\u00B7': '-', '\u2027': '-',
+    '\u2122': '(TM)', '\u00A9': '(c)', '\u00AE': '(R)',
+    '\u00D7': 'x', '\u00F7': '/', '\u00B1': '+/-', '\u2264': '<=', '\u2265': '>=', '\u2260': '!=', '\u2248': '~',
+    '\u00BC': '1/4', '\u00BD': '1/2', '\u00BE': '3/4', '\u2153': '1/3', '\u2154': '2/3', '\u2044': '/',
+    '\u2020': '*', '\u2021': '**', '\u00A7': 'Section', '\u2030': ' per mille'
+  };
+
+  var EMOJI_SEQ_SRC = '(?:\\p{Regional_Indicator}{2}' +
+    '|\\u{1F3F4}[\\u{E0061}-\\u{E007A}]+\\u{E007F}' +
+    '|[#*0-9]\\uFE0F?\\u20E3' +
+    '|\\p{Extended_Pictographic}(?:\\p{Emoji_Modifier}|\\uFE0F|\\uFE0E|\\u20E3)*(?:\\u200D\\p{Extended_Pictographic}(?:\\p{Emoji_Modifier}|\\uFE0F|\\uFE0E)*)*)';
+  var EMOJI_SEQ_G = new RegExp(EMOJI_SEQ_SRC, 'gu');
+  var NK_SCAN = new RegExp(EMOJI_SEQ_SRC + '|[^\\x00-\\x7F]', 'gu');
+  var IS_LETTERISH = /[\p{L}\p{M}\p{N}]/u;
+  var IS_PUNCT_SYM = /[\p{P}\p{S}]/u;
+  var LATIN_ACCENTED = /[\u00C0-\u00FF\u0100-\u024F\u1E00-\u1EFF]/g;
+  var LATIN_SPECIAL = { '\u00E6': 'ae', '\u00C6': 'AE', '\u0153': 'oe', '\u0152': 'OE', '\u00DF': 'ss', '\u00F8': 'o', '\u00D8': 'O',
+    '\u0142': 'l', '\u0141': 'L', '\u0111': 'd', '\u0110': 'D', '\u00F0': 'd', '\u00D0': 'D', '\u00FE': 'th', '\u00DE': 'Th',
+    '\u0131': 'i', '\u0138': 'k', '\u014B': 'ng', '\u014A': 'NG', '\u0167': 't', '\u0166': 'T', '\u0127': 'h', '\u0126': 'H' };
+
+  function stripAccent(ch) {
+    if (LATIN_SPECIAL[ch]) return LATIN_SPECIAL[ch];
+    if (typeof ch.normalize !== 'function') return ch;
+    var d = ch.normalize('NFD').replace(/[\u0300-\u036F]/g, '');
+    return /^[A-Za-z]+$/.test(d) ? d : ch;
+  }
+
+  function nkCategory(ch, cp) {
+    if (QUOTE_DOUBLE.test(ch) || QUOTE_SINGLE.test(ch)) return 'quote';
+    if (EM_DASHES.test(ch) || OTHER_DASHES.test(ch)) return 'dash';
+    if (cp === 0x2026) return 'ellipsis';
+    if (IS_LETTERISH.test(ch)) return 'letter';
+    if (IS_PUNCT_SYM.test(ch)) return 'symbol';
+    return 'other';
+  }
+
+  function nkName(cp, ch, category) {
+    if (NK_NAMES[cp]) return NK_NAMES[cp];
+    if (category === 'emoji') return 'EMOJI';
+    if (category === 'letter') return 'LETTER ' + ch;
+    if (category === 'symbol') return 'SYMBOL ' + ch;
+    return 'CHARACTER U+' + hex(cp);
+  }
+
+  // What the current options will do with a non-keyboard character.
+  function nkAction(category, ch, opts) {
+    switch (category) {
+      case 'quote': return opts.quotes ? 'rewrite' : 'keep';
+      case 'dash':
+        if (EM_DASHES.test(ch)) return opts.emDash && opts.emDash !== 'off' ? 'rewrite' : 'keep';
+        return opts.dashes ? 'rewrite' : 'keep';
+      case 'ellipsis': return opts.ellipsis ? 'rewrite' : 'keep';
+      case 'symbol': return opts.symbols && SYMBOL_MAP[ch] ? 'rewrite' : 'keep';
+      case 'emoji': return opts.emoji ? 'remove' : 'keep';
+      case 'letter': return opts.accents && stripAccent(ch) !== ch ? 'rewrite' : 'keep';
+      default: return 'keep';
+    }
+  }
+
+  function nkReplacement(category, ch, opts) {
+    switch (category) {
+      case 'quote': return QUOTE_DOUBLE.test(ch) ? '"' : "'";
+      case 'dash':
+        if (EM_DASHES.test(ch)) return opts.emDash === 'comma' ? ',' : '-';
+        return '-';
+      case 'ellipsis': return '...';
+      case 'symbol': return SYMBOL_MAP[ch] || '';
+      case 'letter': return stripAccent(ch);
+      default: return '';
+    }
+  }
+
+  // Per-occurrence findings for non-keyboard characters, with input positions.
+  function analyzeNonKeyboard(text, options) {
+    var opts = withDefaults(options);
+    var findings = [];
+    if (typeof text !== 'string' || !text || !/[^\x00-\x7F]/.test(text)) return findings;
+    NK_SCAN.lastIndex = 0;
+    var m;
+    while ((m = NK_SCAN.exec(text)) !== null) {
+      var s = m[0];
+      var cp = s.codePointAt(0);
+      var isEmoji = s.length > 1 || cp >= 0x1F000 || EMOJI_SEQ_G.test(s);
+      EMOJI_SEQ_G.lastIndex = 0;
+      if (!isEmoji && describe(cp)) continue; // invisible characters are reported by analyze()
+      var category = isEmoji ? 'emoji' : nkCategory(s, cp);
+      var action = nkAction(category, s, opts);
+      findings.push({
+        index: m.index,
+        length: s.length,
+        cp: cp,
+        code: 'U+' + hex(cp),
+        char: s,
+        name: nkName(cp, s, category),
+        abbr: category === 'emoji' ? s : (category === 'letter' ? s : 'U+' + hex(cp)),
+        category: category,
+        group: 'nk',
+        action: action,
+        replacement: action === 'rewrite' ? nkReplacement(category, s, opts) : (action === 'remove' ? '' : s)
+      });
+    }
+    return findings;
+  }
+
+  function summarizeNonKeyboard(findings) {
+    var byKey = new Map();
+    findings.forEach(function (f) {
+      var key = f.char + ':' + f.action;
+      var row = byKey.get(key);
+      if (!row) {
+        row = { char: f.char, code: f.code, cp: f.cp, name: f.name, abbr: f.abbr, category: f.category,
+          categoryLabel: NK_CATEGORIES[f.category].label, action: f.action, replacement: f.replacement, count: 0 };
+        byKey.set(key, row);
+      }
+      row.count++;
+    });
+    var order = Object.keys(NK_CATEGORIES);
+    return Array.from(byKey.values()).sort(function (a, b) {
+      var g = order.indexOf(a.category) - order.indexOf(b.category);
+      if (g !== 0) return g;
+      if (a.count !== b.count) return b.count - a.count;
+      return a.cp - b.cp;
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Style cleanup
   // ---------------------------------------------------------------------------
 
   var TYPOGRAPHY_RULES = [
-    { id: 'emDash', label: 'Em dashes' },
-    { id: 'enDash', label: 'En dashes' },
     { id: 'quotes', label: 'Curly quotes' },
+    { id: 'emDash', label: 'Em dashes' },
+    { id: 'dashes', label: 'Other dashes' },
     { id: 'ellipsis', label: 'Ellipsis characters' },
+    { id: 'symbols', label: 'Symbols' },
+    { id: 'emoji', label: 'Emoji' },
+    { id: 'accents', label: 'Accented letters' },
     { id: 'collapseSpaces', label: 'Doubled spaces' }
   ];
 
   var PUNCT = /[.,;:!?]/;
 
   function applyTypography(text, options) {
-    var counts = { emDash: 0, enDash: 0, quotes: 0, ellipsis: 0, collapseSpaces: 0 };
+    var counts = { quotes: 0, emDash: 0, dashes: 0, ellipsis: 0, symbols: 0, emoji: 0, accents: 0, collapseSpaces: 0 };
+
+    if (options.emoji) {
+      var before = text;
+      text = text.replace(EMOJI_SEQ_G, function () { counts.emoji++; return ''; });
+      if (text !== before) {
+        text = text.replace(/ {2,}/g, ' ').replace(/[ \t]+(?=\r?\n|$)/g, '');
+      }
+    }
 
     var emDashMode = options.emDash || 'off';
     if (emDashMode === 'hyphen' || emDashMode === 'comma') {
@@ -358,7 +541,6 @@
           if (atLineEnd) return '';
           return ' - ';
         }
-        // comma mode: "word\u2014word" becomes "word, word"
         if (atLineStart) return '';
         if (atLineEnd) return '.';
         if (PUNCT.test(next)) return '';
@@ -368,10 +550,10 @@
       if (emDashMode === 'comma') text = text.replace(/,\s*([.,;:!?])/g, '$1');
     }
 
-    if (options.enDash) {
-      text = text.replace(/(\d)\s?\u2013\s?(\d)/g, function (m, a, b) { counts.enDash++; return a + '-' + b; });
+    if (options.dashes) {
+      text = text.replace(/(\d)\s?\u2013\s?(\d)/g, function (m, a, b) { counts.dashes++; return a + '-' + b; });
       text = text.replace(/[ \t]*\u2013[ \t]*/g, function (m, offset, whole) {
-        counts.enDash++;
+        counts.dashes++;
         var prev = offset > 0 ? whole[offset - 1] : '';
         var nextIdx = offset + m.length;
         var next = nextIdx < whole.length ? whole[nextIdx] : '';
@@ -379,15 +561,29 @@
         if (next === '' || next === '\n') return '';
         return ' - ';
       });
+      text = text.replace(/[\u2010\u2011\u2012\u2212\u2043]/g, function () { counts.dashes++; return '-'; });
     }
 
     if (options.quotes) {
       text = text.replace(/[\u201C\u201D\u201E\u201F\u00AB\u00BB\u2033\u301D\u301E]/g, function () { counts.quotes++; return '"'; });
-      text = text.replace(/[\u2018\u2019\u201A\u201B\u2039\u203A\u02BC\u02C8\u2032\u00B4]/g, function () { counts.quotes++; return "'"; });
+      text = text.replace(/[\u2018\u2019\u201A\u201B\u2039\u203A\u02BC\u02C8\u2032\u00B4\u02BB]/g, function () { counts.quotes++; return "'"; });
     }
 
     if (options.ellipsis) {
       text = text.replace(/\u2026/g, function () { counts.ellipsis++; return '...'; });
+    }
+
+    if (options.symbols) {
+      text = text.replace(/[\u2192\u2190\u2194\u21D2\u27A1\u2022\u2023\u25E6\u00B7\u2027\u2122\u00A9\u00AE\u00D7\u00F7\u00B1\u2264\u2265\u2260\u2248\u00BC\u00BD\u00BE\u2153\u2154\u2044\u2020\u2021\u00A7\u2030]/g,
+        function (ch) { counts.symbols++; return SYMBOL_MAP[ch]; });
+    }
+
+    if (options.accents) {
+      text = text.replace(LATIN_ACCENTED, function (ch) {
+        var r = stripAccent(ch);
+        if (r !== ch) counts.accents++;
+        return r;
+      });
     }
 
     if (options.collapseSpaces) {
@@ -408,10 +604,13 @@
     protectScripts: true,
     homoglyphs: true,
     nfc: true,
-    emDash: 'off',      // 'off' | 'hyphen' | 'comma'
-    enDash: false,
-    quotes: false,
-    ellipsis: false,
+    quotes: true,
+    emDash: 'hyphen',   // 'off' | 'hyphen' | 'comma'
+    dashes: true,
+    ellipsis: true,
+    symbols: true,
+    emoji: false,
+    accents: false,
     collapseSpaces: false
   };
 
@@ -462,6 +661,11 @@
       out = n;
     }
 
+    // Report non-keyboard characters as they stand after the invisible pass,
+    // so look-alike letters that were already fixed are not counted twice.
+    var nkFindings = analyzeNonKeyboard(out, opts);
+    var nonKeyboard = summarizeNonKeyboard(nkFindings);
+
     var typo = applyTypography(out, opts);
     out = typo.text;
 
@@ -471,12 +675,14 @@
 
     var styleChanges = typography.reduce(function (acc, r) { return acc + r.count; }, 0);
     var kept = findings.filter(function (f) { return f.action === ACTIONS.keep; }).length;
+    var nkKept = nkFindings.filter(function (f) { return f.action === 'keep'; }).length;
 
     return {
       input: text,
       output: out,
       findings: findings,
       summary: summarize(findings),
+      nonKeyboard: nonKeyboard,
       typography: typography,
       homoglyphs: homoglyphCount,
       normalized: normalized,
@@ -487,6 +693,8 @@
         kept: kept,
         removed: removed,
         replaced: replaced + homoglyphCount,
+        nonKeyboard: nkFindings.length,
+        nonKeyboardKept: nkKept,
         styleChanges: styleChanges
       },
       changed: out !== text
@@ -510,14 +718,17 @@
   return {
     clean: clean,
     analyze: analyze,
+    analyzeNonKeyboard: analyzeNonKeyboard,
     summarize: summarize,
+    summarizeNonKeyboard: summarizeNonKeyboard,
     segments: segments,
     catalog: catalog,
     fixHomoglyphs: fixHomoglyphs,
     GROUPS: GROUPS,
+    NK_CATEGORIES: NK_CATEGORIES,
     ACTIONS: ACTIONS,
     DEFAULTS: DEFAULTS,
     TYPOGRAPHY_RULES: TYPOGRAPHY_RULES,
-    version: '1.0.0'
+    version: '1.1.0'
   };
 });

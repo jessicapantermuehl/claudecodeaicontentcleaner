@@ -20,7 +20,13 @@ Find and remove the invisible characters, hidden watermarks, look-alike letters,
 
 Emoji sequences (families, flags, skin tones) and scripts that need zero-width joiners for correct spelling (Arabic, Persian, Devanagari, and others) are protected by default.
 
-Opt-in style cleanup: em dashes to a hyphen or comma, en dashes to hyphens, curly quotes to straight, the ellipsis character to three dots, and collapsing doubled spaces.
+**Non-keyboard characters.** Everything else a keyboard cannot type is listed too, with a count and what will happen to it: curly quotes and apostrophes, em and en dashes, the ellipsis character, arrows, bullets, trademark signs, emoji, and accented letters. By default the typographic ones are rewritten as their keyboard equivalents (`"` `'` `-` `...` `->`), emoji and accented letters are kept, and both can be changed in settings. The output is verified until it contains keyboard characters only, apart from what you chose to keep.
+
+## What this does and does not do
+
+Ghost Ink removes the character-level evidence that text was pasted from an AI tool: invisible watermarks, look-alike letters, and typography that no keyboard produces. That is what crawlers, plagiarism checkers, and paste inspectors can prove from the bytes themselves.
+
+It does not change the words. Statistical AI detectors score sentence rhythm, word choice, and predictability, and no character cleaner affects that. If the goal is text that reads as your own, the cleaned output still needs an editing pass in your voice.
 
 ## Use it
 
@@ -37,11 +43,11 @@ node bin/ghost-ink.js article.txt
 # just list what is hiding
 node bin/ghost-ink.js --report article.txt
 
-# clean from the clipboard on macOS, with style cleanup
-pbpaste | node bin/ghost-ink.js --em-dash hyphen --quotes | pbcopy
+# clean from the clipboard on macOS
+pbpaste | node bin/ghost-ink.js | pbcopy
 
-# write to a file and see the report
-node bin/ghost-ink.js --em-dash comma -o clean.txt draft.txt
+# keep curly quotes, turn em dashes into commas, drop emoji
+node bin/ghost-ink.js --no-quotes --em-dash comma --emoji -o clean.txt draft.txt
 ```
 
 Run `node bin/ghost-ink.js --help` for every flag.
@@ -51,11 +57,12 @@ Run `node bin/ghost-ink.js --help` for every flag.
 ```js
 const GhostInk = require('./cleaner.js');
 
-const result = GhostInk.clean(text, { emDash: 'hyphen', quotes: true });
+const result = GhostInk.clean(text, { emDash: 'comma', emoji: true });
 result.output;        // the cleaned string
-result.summary;       // [{ code: 'U+200B', name: 'ZERO WIDTH SPACE', count: 12, action: 'remove', ... }]
-result.stats;         // { hidden, kept, removed, replaced, styleChanges, inputLength, outputLength }
-result.typography;    // [{ id: 'emDash', label: 'Em dashes', count: 3 }]
+result.summary;       // hidden characters: [{ code: 'U+200B', name: 'ZERO WIDTH SPACE', count: 12, action: 'remove', ... }]
+result.nonKeyboard;   // [{ char: '’', code: 'U+2019', category: 'quote', count: 58, action: 'rewrite', replacement: "'" }, ...]
+result.stats;         // { hidden, kept, removed, replaced, nonKeyboard, nonKeyboardKept, styleChanges, inputLength, outputLength }
+result.typography;    // [{ id: 'quotes', label: 'Curly quotes', count: 58 }, ...]
 result.homoglyphs;    // number of look-alike letters fixed
 result.changed;       // true when output differs from input
 ```
@@ -68,15 +75,18 @@ Options and their defaults:
   protectScripts: true,   // keep ZWJ/ZWNJ between Arabic, Indic, and similar letters
   homoglyphs: true,       // fix look-alike letters inside Latin words
   nfc: true,              // Unicode NFC normalization
-  emDash: 'off',          // 'off' | 'hyphen' | 'comma'
-  enDash: false,
-  quotes: false,
-  ellipsis: false,
+  quotes: true,           // curly quotes and apostrophes to " and '
+  emDash: 'hyphen',       // 'off' | 'hyphen' | 'comma'
+  dashes: true,           // en dashes, hyphen variants, minus signs to -
+  ellipsis: true,         // the ellipsis character to ...
+  symbols: true,          // arrows, bullets, (TM), (c), fractions to keyboard equivalents
+  emoji: false,           // remove emoji
+  accents: false,         // strip accents from Latin letters
   collapseSpaces: false
 }
 ```
 
-`GhostInk.analyze(text)` returns the raw per-character findings, and `GhostInk.segments(text, findings)` splits the text into runs and marks for rendering a reveal view.
+`GhostInk.analyze(text)` returns the raw per-character findings for hidden characters, `GhostInk.analyzeNonKeyboard(text, options)` does the same for everything else outside ASCII, and `GhostInk.segments(text, findings)` splits the text into runs and marks for rendering a reveal view.
 
 ## Develop
 

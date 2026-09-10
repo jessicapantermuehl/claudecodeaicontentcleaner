@@ -7,10 +7,13 @@
  *   ghost-ink --report [file]         list hidden characters without printing cleaned text
  *
  * Options:
- *   --em-dash <off|hyphen|comma>   how to rewrite em dashes (default: off)
- *   --en-dash                      rewrite en dashes as hyphens
- *   --quotes                       straighten curly quotes
- *   --ellipsis                     turn the ellipsis character into three dots
+ *   --em-dash <off|hyphen|comma>   how to rewrite em dashes (default: hyphen)
+ *   --no-quotes                    keep curly quotes instead of straightening them
+ *   --no-dashes                    keep en dashes and hyphen variants
+ *   --no-ellipsis                  keep the ellipsis character
+ *   --no-symbols                   keep arrows, bullets, and similar symbols
+ *   --emoji                        remove emoji
+ *   --accents                      strip accents from Latin letters
  *   --collapse-spaces              collapse doubled spaces and trailing whitespace
  *   --no-homoglyphs                leave look-alike letters alone
  *   --no-nfc                       skip Unicode NFC normalization
@@ -40,9 +43,12 @@ function parseArgs(argv) {
       case '--json': opts.json = true; break;
       case '-o': case '--output': opts.output = argv[++i]; break;
       case '--em-dash': opts.options.emDash = argv[++i]; break;
-      case '--en-dash': opts.options.enDash = true; break;
-      case '--quotes': opts.options.quotes = true; break;
-      case '--ellipsis': opts.options.ellipsis = true; break;
+      case '--no-quotes': opts.options.quotes = false; break;
+      case '--no-dashes': opts.options.dashes = false; break;
+      case '--no-ellipsis': opts.options.ellipsis = false; break;
+      case '--no-symbols': opts.options.symbols = false; break;
+      case '--emoji': opts.options.emoji = true; break;
+      case '--accents': opts.options.accents = true; break;
       case '--collapse-spaces': opts.options.collapseSpaces = true; break;
       case '--no-homoglyphs': opts.options.homoglyphs = false; break;
       case '--no-nfc': opts.options.nfc = false; break;
@@ -100,6 +106,20 @@ function report(result) {
         lines.push(group);
       }
       lines.push('  ' + row.code.padEnd(8) + String(row.count).padStart(5) + '  ' + row.name + '  [' + actionWord(row.action) + ']');
+    }
+  }
+  if (result.nonKeyboard.length) {
+    lines.push('');
+    lines.push(plural(result.stats.nonKeyboard, 'non-keyboard character') + ' found' +
+      (result.stats.nonKeyboardKept ? ' (' + result.stats.nonKeyboardKept + ' kept)' : '') + '.');
+    let cat = null;
+    for (const row of result.nonKeyboard) {
+      if (row.categoryLabel !== cat) {
+        cat = row.categoryLabel;
+        lines.push(cat);
+      }
+      const what = row.action === 'rewrite' ? 'now ' + JSON.stringify(row.replacement) : row.action === 'remove' ? 'removed' : 'kept';
+      lines.push('  ' + row.code.padEnd(8) + String(row.count).padStart(5) + '  ' + row.char + '  ' + row.name + '  [' + what + ']');
     }
   }
   if (result.homoglyphs) lines.push('\n' + plural(result.homoglyphs, 'look-alike letter') + ' fixed.');

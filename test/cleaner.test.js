@@ -100,9 +100,50 @@ test('normalizes decomposed characters to NFC', () => {
   assert.equal(clean('cafe\u0301', { nfc: false }), 'cafe\u0301');
 });
 
-test('typography options are off by default', () => {
-  const text = 'Wait\u2014what? \u201CQuotes\u201D and \u2018more\u2019 \u2026 2019\u20132024';
+test('typography rewrites are on by default and can all be turned off', () => {
+  const text = 'Wait\u2014what? \u201CQuotes\u201D and \u2018more\u2019 \u2026 2019\u20132024 \u2192 go';
+  assert.equal(clean(text), 'Wait - what? "Quotes" and \'more\' ... 2019-2024 -> go');
+  const off = { quotes: false, emDash: 'off', dashes: false, ellipsis: false, symbols: false };
+  assert.equal(clean(text, off), text);
+});
+
+test('reports non-keyboard characters with the action the options imply', () => {
+  const r = GhostInk.clean('I\u2019m here\u2026 caf\u00E9 \u2728 \u2022 ok', { ellipsis: false });
+  const byCode = Object.fromEntries(r.nonKeyboard.map((x) => [x.code, x]));
+  assert.equal(byCode['U+2019'].category, 'quote');
+  assert.equal(byCode['U+2019'].action, 'rewrite');
+  assert.equal(byCode['U+2019'].replacement, "'");
+  assert.equal(byCode['U+2026'].action, 'keep');
+  assert.equal(byCode['U+00E9'].category, 'letter');
+  assert.equal(byCode['U+00E9'].action, 'keep');
+  assert.equal(byCode['U+2728'].category, 'emoji');
+  assert.equal(byCode['U+2022'].replacement, '-');
+  assert.equal(r.stats.nonKeyboard, 5);
+  assert.equal(r.stats.nonKeyboardKept, 3);
+});
+
+test('non-keyboard report counts emoji sequences as one item and skips invisibles', () => {
+  const f = GhostInk.analyzeNonKeyboard('a\u200B\u2019b \u{1F468}\u200D\u{1F469}\u200D\u{1F467} \u{1F1FA}\u{1F1F8} 1\uFE0F\u20E3');
+  assert.deepEqual(f.map((x) => x.category), ['quote', 'emoji', 'emoji', 'emoji']);
+  assert.equal(f[1].char, '\u{1F468}\u200D\u{1F469}\u200D\u{1F467}');
+});
+
+test('symbols map to keyboard equivalents', () => {
+  assert.equal(clean('Read more \u2192 here \u2022 5 \u00D7 3 \u2122'), 'Read more -> here - 5 x 3 (TM)');
+  assert.equal(clean('a \u2192 b', { symbols: false }), 'a \u2192 b');
+});
+
+test('emoji removal is opt-in and tidies the spaces it leaves', () => {
+  const text = 'Hello \u{1F44B}\u{1F3FD} world \u2728\nNext \u{1F468}\u200D\u{1F469}\u200D\u{1F467} line';
   assert.equal(clean(text), text);
+  assert.equal(clean(text, { emoji: true }), 'Hello world\nNext line');
+  assert.equal(GhostInk.clean(text, { emoji: true }).typography.find((t) => t.id === 'emoji').count, 3);
+});
+
+test('accent stripping is opt-in and only touches Latin letters', () => {
+  const text = 'caf\u00E9 na\u00EFve \u00DFtra\u00DFe \u00F8re \u043F\u0440\u0438\u0432\u0435\u0442';
+  assert.equal(clean(text), text);
+  assert.equal(clean(text, { accents: true }), 'cafe naive sstrasse ore \u043F\u0440\u0438\u0432\u0435\u0442');
 });
 
 test('em dash to hyphen', () => {
@@ -120,10 +161,12 @@ test('em dash to comma', () => {
   assert.equal(clean('And then\u2014', { emDash: 'comma' }), 'And then.');
 });
 
-test('en dash', () => {
-  assert.equal(clean('2019\u20132024', { enDash: true }), '2019-2024');
-  assert.equal(clean('pages 10 \u2013 12', { enDash: true }), 'pages 10-12');
-  assert.equal(clean('one \u2013 two', { enDash: true }), 'one - two');
+test('en dash and hyphen variants', () => {
+  assert.equal(clean('2019\u20132024', { dashes: true }), '2019-2024');
+  assert.equal(clean('pages 10 \u2013 12', { dashes: true }), 'pages 10-12');
+  assert.equal(clean('one \u2013 two', { dashes: true }), 'one - two');
+  assert.equal(clean('non\u2011breaking \u2212 minus', { dashes: true }), 'non-breaking - minus');
+  assert.equal(clean('2019\u20132024', { dashes: false }), '2019\u20132024');
 });
 
 test('curly quotes and ellipsis', () => {
