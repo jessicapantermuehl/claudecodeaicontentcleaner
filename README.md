@@ -1,4 +1,4 @@
-# Ghost Ink
+# PlainTyped
 
 Find and remove the invisible characters, hidden watermarks, look-alike letters, and typography tells that AI tools and copy-protection systems leave inside text. Everything runs locally, in the browser or from the command line. No dependencies, no network calls.
 
@@ -41,44 +41,44 @@ Below the character ledger, a second panel reads the text the way a statistical 
 | Stacked intensifiers | truly, genuinely, incredibly, absolutely |
 | Wrap-up closing paragraph | A final paragraph that restates the piece or signs off with a pep talk |
 
-Each flagged check shows a severity, a count per 100 words, examples from the text, and a one-line fix. The Reveal view underlines every match in place. From the command line, `ghost-ink --tells file.txt` prints the same report. The engine lives in `tells.js` and exposes `analyzeTells(text)` and `highlights(report)`.
+Each flagged check shows a severity, a count per 100 words, examples from the text, and a one-line fix. The Reveal view underlines every match in place. From the command line, `plaintyped --tells file.txt` prints the same report. The engine lives in `tells.js` and exposes `analyzeTells(text)` and `highlights(report)`.
 
 ## What this does and does not do
 
-Ghost Ink removes the character-level evidence that text was pasted from an AI tool: invisible watermarks, look-alike letters, and typography that no keyboard produces. That is what crawlers, plagiarism checkers, and paste inspectors can prove from the bytes themselves.
+PlainTyped removes the character-level evidence that text was pasted from an AI tool: invisible watermarks, look-alike letters, and typography that no keyboard produces. That is what crawlers, plagiarism checkers, and paste inspectors can prove from the bytes themselves.
 
-It does not change the words. Statistical AI detectors score sentence rhythm, word choice, and predictability, and no character cleaner affects that. The Writing tells panel shows you where those patterns are so an editing pass in your own voice knows where to go. Ghost Ink deliberately does not automate that pass: an automatic "humanizer" cannot run locally, cannot show its work, and makes copy worse.
+It does not change the words. Statistical AI detectors score sentence rhythm, word choice, and predictability, and no character cleaner affects that. The Writing tells panel shows you where those patterns are so an editing pass in your own voice knows where to go. PlainTyped deliberately does not automate that pass: an automatic "humanizer" cannot run locally, cannot show its work, and makes copy worse.
 
 ## Use it
 
 **In the browser.** Open `index.html`, or run `npm start` and visit http://localhost:8787. Paste text, read the breakdown, copy the clean version. The Reveal tab shows every hidden character in place as a small labelled chip.
 
-**As one file.** `npm run build` writes `dist/ghost-ink.html`, the whole app with the engine inlined, ready to drop on any static host or open by double-clicking.
+**As one file.** `npm run build` writes `dist/plaintyped.html`, the whole app with the engine inlined, ready to drop on any static host or open by double-clicking.
 
 **From the command line.**
 
 ```sh
 # print the cleaned text
-node bin/ghost-ink.js article.txt
+node bin/plaintyped.js article.txt
 
 # just list what is hiding
-node bin/ghost-ink.js --report article.txt
+node bin/plaintyped.js --report article.txt
 
 # clean from the clipboard on macOS
-pbpaste | node bin/ghost-ink.js | pbcopy
+pbpaste | node bin/plaintyped.js | pbcopy
 
 # keep curly quotes, turn em dashes into commas, drop emoji
-node bin/ghost-ink.js --no-quotes --em-dash comma --emoji -o clean.txt draft.txt
+node bin/plaintyped.js --no-quotes --em-dash comma --emoji -o clean.txt draft.txt
 ```
 
-Run `node bin/ghost-ink.js --help` for every flag.
+Run `node bin/plaintyped.js --help` for every flag.
 
 **As a library.**
 
 ```js
-const GhostInk = require('./cleaner.js');
+const PlainTyped = require('./cleaner.js');
 
-const result = GhostInk.clean(text, { emDash: 'comma', emoji: true });
+const result = PlainTyped.clean(text, { emDash: 'comma', emoji: true });
 result.output;        // the cleaned string
 result.summary;       // hidden characters: [{ code: 'U+200B', name: 'ZERO WIDTH SPACE', count: 12, action: 'remove', ... }]
 result.nonKeyboard;   // [{ char: '’', code: 'U+2019', category: 'quote', count: 58, action: 'rewrite', replacement: "'" }, ...]
@@ -107,7 +107,7 @@ Options and their defaults:
 }
 ```
 
-`GhostInk.analyze(text)` returns the raw per-character findings for hidden characters, `GhostInk.analyzeNonKeyboard(text, options)` does the same for everything else outside ASCII, and `GhostInk.segments(text, findings)` splits the text into runs and marks for rendering a reveal view.
+`PlainTyped.analyze(text)` returns the raw per-character findings for hidden characters, `PlainTyped.analyzeNonKeyboard(text, options)` does the same for everything else outside ASCII, and `PlainTyped.segments(text, findings)` splits the text into runs and marks for rendering a reveal view.
 
 ## Develop
 
@@ -121,4 +121,4 @@ Requires Node 18 or newer. There are no runtime or development dependencies.
 
 ## Why these characters
 
-Zero-width and tag characters are the usual carriers for text watermarks: they survive copy and paste, are invisible in every editor, and can encode a payload of arbitrary length. Look-alike spaces and letters are used both for watermarking and for slipping past plagiarism and AI detectors. Ghost Ink reports exactly what it found and what it did about each one, so you can judge the result instead of trusting a black box.
+Zero-width and tag characters are the usual carriers for text watermarks: they survive copy and paste, are invisible in every editor, and can encode a payload of arbitrary length. Look-alike spaces and letters are used both for watermarking and for slipping past plagiarism and AI detectors. PlainTyped reports exactly what it found and what it did about each one, so you can judge the result instead of trusting a black box.

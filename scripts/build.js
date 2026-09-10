@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-// Builds dist/ghost-ink.html: the whole app in one file with cleaner.js and tells.js inlined,
+// Builds dist/plaintyped.html: the whole app in one file with cleaner.js and tells.js inlined,
 // so it can be emailed, dropped on any static host, or opened by double-clicking.
 const fs = require('fs');
 const path = require('path');
@@ -16,5 +16,5 @@ const out = html.replace(tag, (m, file) => {
   return '<script>\n' + lib.replace(/<\/script/gi, '<\\/script') + '\n</script>';
 });
 fs.mkdirSync(path.join(root, 'dist'), { recursive: true });
-fs.writeFileSync(path.join(root, 'dist', 'ghost-ink.html'), out);
-console.log('Wrote dist/ghost-ink.html (' + (out.length / 1024).toFixed(1) + ' KB)');
+fs.writeFileSync(path.join(root, 'dist', 'plaintyped.html'), out);
+console.log('Wrote dist/plaintyped.html (' + (out.length / 1024).toFixed(1) + ' KB)');

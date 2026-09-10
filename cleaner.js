@@ -1,14 +1,14 @@
 /*
- * Ghost Ink: invisible character and AI typography cleaner.
+ * PlainTyped: invisible character and AI typography cleaner.
  *
- * Works in the browser (window.GhostInk) and in Node (module.exports).
+ * Works in the browser (window.PlainTyped) and in Node (module.exports).
  * No dependencies.
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) {
     module.exports = factory();
   } else {
-    root.GhostInk = factory();
+    root.PlainTyped = factory();
   }
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';

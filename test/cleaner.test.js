@@ -1,13 +1,13 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const GhostInk = require('../cleaner.js');
+const PlainTyped = require('../cleaner.js');
 
-const clean = (text, opts) => GhostInk.clean(text, opts).output;
+const clean = (text, opts) => PlainTyped.clean(text, opts).output;
 
 test('plain text passes through untouched', () => {
   const text = 'The quick brown fox.\nSecond line, with "quotes" and 3-4 items.';
-  const r = GhostInk.clean(text);
+  const r = PlainTyped.clean(text);
   assert.equal(r.output, text);
   assert.equal(r.changed, false);
   assert.equal(r.findings.length, 0);
@@ -41,7 +41,7 @@ test('turns unicode line and paragraph separators into newlines', () => {
 test('strips tag characters used to hide text', () => {
   const hidden = 'h\u{E0068}\u{E0069}\u{E0064}\u{E0064}\u{E0065}\u{E006E}';
   assert.equal(clean(hidden), 'h');
-  const r = GhostInk.clean(hidden);
+  const r = PlainTyped.clean(hidden);
   assert.equal(r.stats.removed, 6);
   assert.equal(r.summary[0].group, 'tag');
 });
@@ -49,7 +49,7 @@ test('strips tag characters used to hide text', () => {
 test('keeps tag characters inside subdivision flag emoji', () => {
   const england = '\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}';
   assert.equal(clean('Flag ' + england + '!'), 'Flag ' + england + '!');
-  const r = GhostInk.clean(england);
+  const r = PlainTyped.clean(england);
   assert.equal(r.stats.kept, 6);
   assert.equal(r.stats.hidden, 0);
 });
@@ -60,7 +60,7 @@ test('keeps joiners and VS16 inside emoji sequences', () => {
   const heart = '\u2764\uFE0F';
   const text = family + ' ' + check + ' ' + heart + ' 1\uFE0F\u20E3';
   assert.equal(clean(text), text);
-  const r = GhostInk.clean(text);
+  const r = PlainTyped.clean(text);
   assert.equal(r.stats.hidden, 0);
   assert.equal(r.stats.kept, 5);
 });
@@ -85,7 +85,7 @@ test('fixes Cyrillic and Greek look-alikes inside Latin words only', () => {
   assert.equal(clean('s\u0430l\u0435 pr\u03BFduct'), 'sale product');
   const russian = '\u043F\u0440\u0438\u0432\u0435\u0442';
   assert.equal(clean(russian + ' hello'), russian + ' hello');
-  assert.equal(GhostInk.clean('s\u0430le').homoglyphs, 1);
+  assert.equal(PlainTyped.clean('s\u0430le').homoglyphs, 1);
   assert.equal(clean('s\u0430le', { homoglyphs: false }), 's\u0430le');
 });
 
@@ -94,7 +94,7 @@ test('maps fullwidth ASCII inside mixed words', () => {
 });
 
 test('normalizes decomposed characters to NFC', () => {
-  const r = GhostInk.clean('cafe\u0301');
+  const r = PlainTyped.clean('cafe\u0301');
   assert.equal(r.output, 'caf\u00E9');
   assert.equal(r.normalized, true);
   assert.equal(clean('cafe\u0301', { nfc: false }), 'cafe\u0301');
@@ -108,7 +108,7 @@ test('typography rewrites are on by default and can all be turned off', () => {
 });
 
 test('reports non-keyboard characters with the action the options imply', () => {
-  const r = GhostInk.clean('I\u2019m here\u2026 caf\u00E9 \u2728 \u2022 ok', { ellipsis: false });
+  const r = PlainTyped.clean('I\u2019m here\u2026 caf\u00E9 \u2728 \u2022 ok', { ellipsis: false });
   const byCode = Object.fromEntries(r.nonKeyboard.map((x) => [x.code, x]));
   assert.equal(byCode['U+2019'].category, 'quote');
   assert.equal(byCode['U+2019'].action, 'rewrite');
@@ -123,7 +123,7 @@ test('reports non-keyboard characters with the action the options imply', () => 
 });
 
 test('non-keyboard report counts emoji sequences as one item and skips invisibles', () => {
-  const f = GhostInk.analyzeNonKeyboard('a\u200B\u2019b \u{1F468}\u200D\u{1F469}\u200D\u{1F467} \u{1F1FA}\u{1F1F8} 1\uFE0F\u20E3');
+  const f = PlainTyped.analyzeNonKeyboard('a\u200B\u2019b \u{1F468}\u200D\u{1F469}\u200D\u{1F467} \u{1F1FA}\u{1F1F8} 1\uFE0F\u20E3');
   assert.deepEqual(f.map((x) => x.category), ['quote', 'emoji', 'emoji', 'emoji']);
   assert.equal(f[1].char, '\u{1F468}\u200D\u{1F469}\u200D\u{1F467}');
 });
@@ -137,7 +137,7 @@ test('emoji removal is opt-in and tidies the spaces it leaves', () => {
   const text = 'Hello \u{1F44B}\u{1F3FD} world \u2728\nNext \u{1F468}\u200D\u{1F469}\u200D\u{1F467} line';
   assert.equal(clean(text), text);
   assert.equal(clean(text, { emoji: true }), 'Hello world\nNext line');
-  assert.equal(GhostInk.clean(text, { emoji: true }).typography.find((t) => t.id === 'emoji').count, 3);
+  assert.equal(PlainTyped.clean(text, { emoji: true }).typography.find((t) => t.id === 'emoji').count, 3);
 });
 
 test('accent stripping is opt-in and only touches Latin letters', () => {
@@ -179,7 +179,7 @@ test('collapse doubled spaces and trailing whitespace', () => {
 });
 
 test('summary groups findings by code point and action', () => {
-  const r = GhostInk.clean('a\u200Bb\u200Bc\u00A0d\u200D\u{1F468}\u200D\u{1F469}');
+  const r = PlainTyped.clean('a\u200Bb\u200Bc\u00A0d\u200D\u{1F468}\u200D\u{1F469}');
   const zwsp = r.summary.find((s) => s.code === 'U+200B');
   assert.equal(zwsp.count, 2);
   assert.equal(zwsp.action, 'remove');
@@ -193,14 +193,14 @@ test('summary groups findings by code point and action', () => {
 
 test('segments cover the whole input in order', () => {
   const text = 'ab\u200Bcd\u00A0e';
-  const segs = GhostInk.segments(text, GhostInk.analyze(text));
+  const segs = PlainTyped.segments(text, PlainTyped.analyze(text));
   assert.deepEqual(segs.map((s) => s.type), ['text', 'mark', 'text', 'mark', 'text']);
   const rebuilt = segs.map((s) => (s.type === 'text' ? s.value : s.finding.char)).join('');
   assert.equal(rebuilt, text);
 });
 
 test('stats count code points, not UTF-16 units', () => {
-  const r = GhostInk.clean('\u{1F600}\u200B');
+  const r = PlainTyped.clean('\u{1F600}\u200B');
   assert.equal(r.stats.inputLength, 2);
   assert.equal(r.stats.outputLength, 1);
 });
@@ -212,8 +212,8 @@ test('handles empty and non-string input', () => {
 });
 
 test('catalog lists every group', () => {
-  const groups = new Set(GhostInk.catalog().map((c) => c.group));
-  for (const g of Object.keys(GhostInk.GROUPS)) assert.ok(groups.has(g), g);
+  const groups = new Set(PlainTyped.catalog().map((c) => c.group));
+  for (const g of Object.keys(PlainTyped.GROUPS)) assert.ok(groups.has(g), g);
 });
 
 // ---------------------------------------------------------------------------

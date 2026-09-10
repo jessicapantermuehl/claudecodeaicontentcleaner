@@ -1,12 +1,12 @@
 {
-  "name": "ghost-ink",
+  "name": "plaintyped",
   "version": "1.2.0",
   "description": "Find and remove invisible Unicode characters, hidden AI watermarks, look-alike letters, and AI typography tells from text. Runs in the browser or from the command line.",
   "license": "MIT",
   "main": "cleaner.js",
   "browser": "cleaner.js",
   "bin": {
-    "ghost-ink": "bin/ghost-ink.js"
+    "plaintyped": "bin/plaintyped.js"
   },
   "files": [
     "cleaner.js",

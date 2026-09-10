@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Reveal and remove invisible Unicode characters, hidden AI watermarks, look-alike letters, and AI typography tells from pasted text. Runs entirely in your browser.">
 <!-- ARTIFACT-START -->
-<title>Ghost Ink</title>
+<title>PlainTyped</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -370,7 +370,7 @@
         <path d="M10 14h11M10 20h20M10 26h15" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/>
       </svg>
       <div>
-        <h1>Ghost Ink</h1>
+        <h1>PlainTyped</h1>
         <p class="sub">Reveal and remove the invisible characters, watermarks, and look-alike letters hiding in pasted text.</p>
       </div>
     </div>
@@ -495,11 +495,11 @@
   </section>
 
   <details class="ref">
-    <summary>Every character Ghost Ink looks for</summary>
+    <summary>Every character PlainTyped looks for</summary>
     <div class="card"><div class="ref-grid" id="ref-grid"></div></div>
   </details>
 
-  <p class="foot">Ghost Ink is open source and dependency-free. The same engine runs from the command line: <code>npx ghost-ink --report file.txt</code>.</p>
+  <p class="foot">PlainTyped is open source and dependency-free. The same engine runs from the command line: <code>npx plaintyped --report file.txt</code>.</p>
 </div>
 
 <script src="cleaner.js"></script>
@@ -507,8 +507,8 @@
 <script>
 (function () {
   'use strict';
-  var G = window.GhostInk;
-  var T = window.GhostInkTells;
+  var G = window.PlainTyped;
+  var T = window.PlainTypedTells;
   var $ = function (id) { return document.getElementById(id); };
 
   var input = $('input'), output = $('output'), reveal = $('reveal'), revealPanel = $('reveal-panel'), revealTypo = $('reveal-typo'), revealTells = $('reveal-tells');
@@ -518,7 +518,7 @@
   var copyBtn = $('btn-copy'), copyLabel = $('copy-label');
   var tabEdit = $('tab-edit'), tabReveal = $('tab-reveal');
 
-  var STORAGE = 'ghost-ink.options.v2';
+  var STORAGE = 'plaintyped.options.v1';
   var BOOL_OPTS = ['protectEmoji', 'protectScripts', 'homoglyphs', 'nfc', 'quotes', 'dashes', 'ellipsis', 'symbols', 'emoji', 'accents', 'collapseSpaces'];
 
   // A sample with the same kinds of marks that AI tools and copy-protection systems leave behind.

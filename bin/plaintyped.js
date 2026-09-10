@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 'use strict';
 /*
- * Ghost Ink command line.
+ * PlainTyped command line.
  *
- *   ghost-ink [options] [file]        clean a file (or stdin) and print the result
- *   ghost-ink --report [file]         list hidden characters without printing cleaned text
- *   ghost-ink --tells [file]          report writing tells (patterns associated with AI drafts)
+ *   plaintyped [options] [file]        clean a file (or stdin) and print the result
+ *   plaintyped --report [file]         list hidden characters without printing cleaned text
+ *   plaintyped --tells [file]          report writing tells (patterns associated with AI drafts)
  *
  * Options:
  *   --em-dash <off|hyphen|comma>   how to rewrite em dashes (default: hyphen)
@@ -26,7 +26,7 @@
  */
 const fs = require('fs');
 const path = require('path');
-const GhostInk = require('../cleaner.js');
+const PlainTyped = require('../cleaner.js');
 const Tells = require('../tells.js');
 
 function usage() {
@@ -149,7 +149,7 @@ function tellsReport(text) {
 
 const args = parseArgs(process.argv.slice(2));
 const input = readInput(args.file);
-const result = GhostInk.clean(input, args.options);
+const result = PlainTyped.clean(input, args.options);
 
 if (args.tells) {
   console.log(tellsReport(input));

@@ -1,13 +1,13 @@
 /*
- * Ghost Ink writing tells: patterns readers and statistical detectors
+ * PlainTyped writing tells: patterns readers and statistical detectors
  * associate with AI drafts. This module only measures and points; it never
- * rewrites anything. Works in the browser (window.GhostInkTells) and Node.
+ * rewrites anything. Works in the browser (window.PlainTypedTells) and Node.
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) {
     module.exports = factory();
   } else {
-    root.GhostInkTells = factory();
+    root.PlainTypedTells = factory();
   }
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
