@@ -215,3 +215,61 @@ test('catalog lists every group', () => {
   const groups = new Set(GhostInk.catalog().map((c) => c.group));
   for (const g of Object.keys(GhostInk.GROUPS)) assert.ok(groups.has(g), g);
 });
+
+// ---------------------------------------------------------------------------
+// Writing tells
+// ---------------------------------------------------------------------------
+const Tells = require('../tells.js');
+
+test('tells: plain human prose scores few tells', () => {
+  const r = Tells.analyzeTells('I went to the store. It was closed, so I walked home the long way, past the park where the old men play chess even when it rains. Bought bread at the corner shop instead. Dinner was late.');
+  assert.equal(r.verdictLevel, 0);
+  assert.equal(r.flagged, 0);
+});
+
+test('tells: catches the classic patterns, with curly apostrophes', () => {
+  const text = 'It\u2019s not about doing more, it\u2019s about doing what lasts. Sound familiar? Translation: less pressure, more progress. ' +
+    'Small. Boring. Repeatable. This truly, genuinely, absolutely elevates your journey.';
+  const r = Tells.analyzeTells(text);
+  const by = Object.fromEntries(r.tells.map((t) => [t.id, t]));
+  assert.ok(by.contrast.count >= 1, 'contrast');
+  assert.equal(by.questions.count, 1);
+  assert.equal(by.labels.count, 1);
+  assert.equal(by.fragments.count, 1);
+  assert.equal(by.intensifiers.count, 3);
+  assert.ok(by.vocabulary.matches.some((m) => /elevates/i.test(m.text)));
+  assert.ok(r.verdictLevel >= 2);
+});
+
+test('tells: even rhythm is flagged, varied rhythm is not', () => {
+  const even = Array.from({ length: 8 }, (_, i) => `Sentence number ${i} has exactly seven words here.`).join(' ');
+  const varied = 'Short. This one runs a good deal longer than the others, wandering through a few clauses before it stops. Then brief again. And one more that stretches out for a while, just to be sure the variation shows. Done. Okay.';
+  assert.ok(Tells.analyzeTells(even).tells.find((t) => t.id === 'rhythm').severity >= 2);
+  assert.equal(Tells.analyzeTells(varied).tells.find((t) => t.id === 'rhythm').severity, 0);
+});
+
+test('tells: repeated starters and closing wrap-up', () => {
+  const text = 'You wake up. You drink water. You step outside. You write three things down.\n\nYou are doing fine.\n\nRemember, small steps count.';
+  const by = Object.fromEntries(Tells.analyzeTells(text).tells.map((t) => [t.id, t]));
+  assert.ok(by.starters.severity >= 1);
+  assert.equal(by.closer.count, 1);
+});
+
+test('tells: highlights are non-overlapping and carry positions', () => {
+  const text = 'Pro tip: truly delve into it. Truly.';
+  const r = Tells.analyzeTells(text);
+  const h = Tells.highlights(r);
+  let end = -1;
+  for (const m of h) {
+    assert.ok(m.index >= end);
+    assert.equal(text.slice(m.index, m.index + m.length), m.text);
+    end = m.index + m.length;
+  }
+  assert.ok(h.length >= 3);
+});
+
+test('tells: empty input', () => {
+  const r = Tells.analyzeTells('');
+  assert.equal(r.words, 0);
+  assert.deepEqual(r.tells, []);
+});

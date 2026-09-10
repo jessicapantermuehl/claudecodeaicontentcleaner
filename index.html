@@ -33,6 +33,12 @@
     --typo-ink: #1F5F8B;
     --typo-bg: #DCEBF7;
     --typo-line: #B9D4EA;
+    --tell-ink: #6E2A7A;
+    --tell-bg: #F1E0F4;
+    --tell-line: #B86BC6;
+    --sev-1: #C9A227;
+    --sev-2: #D97B1E;
+    --sev-3: #B3261E;
     --shadow: 0 1px 2px rgba(23, 28, 34, 0.06), 0 8px 24px -12px rgba(23, 28, 34, 0.18);
     --radius: 10px;
     --font-display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
@@ -63,6 +69,12 @@
       --typo-ink: #9CCBEF;
       --typo-bg: #1B3448;
       --typo-line: #2B4D68;
+      --tell-ink: #E4B6EE;
+      --tell-bg: #3A2040;
+      --tell-line: #B86BC6;
+      --sev-1: #E0BF4A;
+      --sev-2: #F0964A;
+      --sev-3: #F4948B;
       --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
     }
   }
@@ -89,6 +101,12 @@
     --typo-ink: #9CCBEF;
     --typo-bg: #1B3448;
     --typo-line: #2B4D68;
+    --tell-ink: #E4B6EE;
+    --tell-bg: #3A2040;
+    --tell-line: #B86BC6;
+    --sev-1: #E0BF4A;
+    --sev-2: #F0964A;
+    --sev-3: #F4948B;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
   }
 
@@ -206,13 +224,20 @@
   .chip.typo { background: var(--typo-bg); color: var(--typo-ink); box-shadow: inset 0 0 0 1px var(--typo-line); }
   .chip.typo.kept { background: transparent; }
   .chip .g { font-family: var(--font-body); font-size: 12px; font-weight: 600; letter-spacing: 0; margin-right: 3px; }
+  .tellmark {
+    background: linear-gradient(transparent 62%, var(--tell-bg) 62%);
+    border-bottom: 2px solid var(--tell-line);
+    cursor: help; border-radius: 1px;
+  }
+  .tellmark .chip { vertical-align: baseline; }
   .reveal-bar {
     display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
     padding: 8px 16px; border-bottom: 1px solid var(--line); background: var(--surface-2);
     font-size: 12px; color: var(--ink-2);
   }
   .legend-item { display: inline-flex; align-items: center; gap: 5px; }
-  .reveal-toggle { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .reveal-toggle { margin-left: auto; display: inline-flex; align-items: center; gap: 12px; }
+  .reveal-toggle label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
   .reveal-toggle input { accent-color: var(--accent); margin: 0; }
 
   /* Lower deck ----------------------------------------------------------- */
@@ -255,6 +280,35 @@
   .ledger-empty { padding: 18px 16px 20px; color: var(--ink-2); font-size: 13.5px; }
   .ledger-empty .big { display: block; font-family: var(--font-display); font-weight: 700; font-size: 18px; color: var(--good); margin-bottom: 2px; }
   .ledger tfoot td { color: var(--ink-2); font-size: 13px; padding-block: 10px 14px; }
+
+  /* Writing tells -------------------------------------------------------- */
+  .deck > .col { display: grid; gap: 16px; min-width: 0; align-content: start; }
+  .verdict {
+    display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px 2px 8px; border-radius: 999px;
+    font-family: var(--font-display); font-weight: 700; font-size: 13px; vertical-align: 1px; margin-right: 6px;
+    background: var(--good-bg); color: var(--good);
+  }
+  .verdict.level-1 { background: var(--accent-bg-soft); color: var(--accent-ink); }
+  .verdict.level-2 { background: #FBE7D6; color: #8A4A0C; }
+  .verdict.level-3 { background: var(--bad-bg); color: var(--bad); }
+  :root[data-theme="dark"] .verdict.level-2 { background: #43301E; color: #F3B27A; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .verdict.level-2 { background: #43301E; color: #F3B27A; } }
+  .tells { list-style: none; margin: 12px 0 0; padding: 0; border-top: 1px solid var(--line); }
+  .tell { display: grid; grid-template-columns: 14px 1fr auto; gap: 4px 12px; padding: 11px 16px; border-bottom: 1px solid var(--line); align-items: start; }
+  .tell .sev { width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; background: var(--sev-1); box-shadow: 0 0 0 3px var(--surface-2); }
+  .tell.sev-2 .sev { background: var(--sev-2); }
+  .tell.sev-3 .sev { background: var(--sev-3); }
+  .tell b { font-weight: 600; font-size: 14px; }
+  .tell .count { font-variant-numeric: tabular-nums; font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-2); white-space: nowrap; padding-top: 2px; }
+  .tell .why { grid-column: 2 / -1; margin: 0; color: var(--ink-2); font-size: 13px; line-height: 1.45; }
+  .tell .eg { grid-column: 2 / -1; margin: 2px 0 0; font-size: 13px; line-height: 1.5; color: var(--ink); }
+  .tell .eg q { quotes: "\201C" "\201D"; color: var(--tell-ink); background: var(--tell-bg); padding: 0 4px; border-radius: 3px; font-style: normal; }
+  .tell .fix { grid-column: 2 / -1; margin: 2px 0 0; font-size: 13px; color: var(--ink-2); }
+  .tell .fix b { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3); margin-right: 4px; }
+  .tells-passed { padding: 10px 16px 14px; font-size: 13px; color: var(--ink-2); line-height: 1.5; }
+  .tells-passed b { color: var(--good); font-weight: 600; }
+  .tells-empty { padding: 16px 16px 18px; color: var(--ink-2); font-size: 13.5px; }
+  .tells-note { padding: 0 16px 14px; margin: 0; font-size: 12.5px; color: var(--ink-3); }
 
   /* Settings ------------------------------------------------------------- */
   .settings { padding-bottom: 8px; }
@@ -347,7 +401,11 @@
             <span class="legend-item"><span class="chip">ZWSP</span> hidden, removed</span>
             <span class="legend-item"><span class="chip keep">ZWJ</span> hidden, kept</span>
             <span class="legend-item"><span class="chip typo">U+2019</span> non-keyboard</span>
-            <label class="reveal-toggle"><input type="checkbox" id="reveal-typo" checked> Mark non-keyboard characters</label>
+            <span class="legend-item"><span class="tellmark">phrase</span> writing tell</span>
+            <span class="reveal-toggle">
+              <label><input type="checkbox" id="reveal-typo" checked> Non-keyboard</label>
+              <label><input type="checkbox" id="reveal-tells" checked> Tells</label>
+            </span>
           </div>
           <div id="reveal" class="reveal" tabindex="0" data-empty="Nothing to reveal yet."></div>
         </div>
@@ -380,12 +438,23 @@
   </section>
 
   <section class="deck">
-    <div class="card" aria-live="polite">
-      <div class="card-head">
-        <h2>What was hiding</h2>
-        <p class="lede" id="lede">Paste something to see a breakdown.</p>
+    <div class="col">
+      <div class="card" aria-live="polite">
+        <div class="card-head">
+          <h2>What was hiding</h2>
+          <p class="lede" id="lede">Paste something to see a breakdown.</p>
+        </div>
+        <div class="ledger-wrap" id="ledger-wrap"></div>
       </div>
-      <div class="ledger-wrap" id="ledger-wrap"></div>
+
+      <div class="card" id="tells-card">
+        <div class="card-head">
+          <h2>Writing tells</h2>
+          <p class="lede" id="tells-lede">Patterns readers and statistical detectors associate with AI drafts.</p>
+        </div>
+        <div id="tells-body"></div>
+        <p class="tells-note">Nothing in this panel is rewritten. It is an editing map: fix these in your own voice, then read the result aloud.</p>
+      </div>
     </div>
 
     <form class="card settings" id="settings" aria-label="Settings" onsubmit="return false">
@@ -434,13 +503,16 @@
 </div>
 
 <script src="cleaner.js"></script>
+<script src="tells.js"></script>
 <script>
 (function () {
   'use strict';
   var G = window.GhostInk;
+  var T = window.GhostInkTells;
   var $ = function (id) { return document.getElementById(id); };
 
-  var input = $('input'), output = $('output'), reveal = $('reveal'), revealPanel = $('reveal-panel'), revealTypo = $('reveal-typo');
+  var input = $('input'), output = $('output'), reveal = $('reveal'), revealPanel = $('reveal-panel'), revealTypo = $('reveal-typo'), revealTells = $('reveal-tells');
+  var tellsLede = $('tells-lede'), tellsBody = $('tells-body');
   var inCount = $('in-count'), inStatus = $('in-status'), outCount = $('out-count'), outStatus = $('out-status');
   var lede = $('lede'), ledgerWrap = $('ledger-wrap');
   var copyBtn = $('btn-copy'), copyLabel = $('copy-label');
@@ -453,7 +525,8 @@
   var SAMPLE = 'Here\u2019s the thing about morning routines\u2014they don\u2019t have to be complicated.\u200B In fact, the most sustainable\u00A0habits are the ones that fit into the life you\uFE0F already have.\u2060\n\n'
     + 'Start with one anchor habit.\u200B Drink a glass of water before your coffee. Step outside for two minutes of daylight.\u200E Write down three things you\u2019re looking forward to\u2026 Small, boring, repeatable.\u200D\n\n'
     + 'The sc\u0456ence is clear: consistency beats intensity.\u202F A five-minute walk you actually take is worth more than the 45\u2011minute workout you keep resc\u04BBeduling.\u200C\n\n'
-    + 'Try it for a week\u2014then adjust.\u00AD Your routine should serve you, not the other way around. \u{1F331}\u{E0061}\u{E0069}\u{E002D}\u{E0077}\u{E0072}\u{E0069}\u{E0074}\u{E0074}\u{E0065}\u{E006E} \u{1F468}\u200D\u{1F469}\u200D\u{1F467}';
+    + 'Sound familiar? Translation: it\u2019s not about doing more, it\u2019s about doing what lasts.\n\n'
+    + 'Try it for a week\u2014then adjust.\u00AD Remember, your routine should serve you, not the other way around. \u{1F331}\u{E0061}\u{E0069}\u{E002D}\u{E0077}\u{E0072}\u{E0069}\u{E0074}\u{E0074}\u{E0065}\u{E006E} \u{1F468}\u200D\u{1F469}\u200D\u{1F467}';
 
   // ---- options ---------------------------------------------------------
   function readOptions() {
@@ -616,34 +689,118 @@
       .replace(/U\+([0-9a-f]{4,6})/i, function (m, h) { return 'U+' + h.toUpperCase(); });
   }
 
+  function chipFor(f) {
+    var m;
+    if (f.group === 'nk') {
+      m = el('mark', 'chip typo' + (f.action === 'keep' ? ' kept' : ''));
+      m.appendChild(el('span', 'g', f.char));
+      m.appendChild(document.createTextNode(f.code));
+      m.title = nkLabel(f) + ' ' + f.code + (f.action === 'rewrite' ? ' (now ' + f.replacement + ')' : f.action === 'remove' ? ' (removed)' : ' (kept)');
+    } else {
+      m = el('mark', 'chip ' + (f.action === 'keep' ? 'keep' : f.action === 'space' ? 'space' : ''), f.abbr);
+      m.title = titleCase(f.name) + ' ' + f.code + (f.action === 'keep' ? ' (kept)' : '');
+    }
+    return m;
+  }
+
+  // Render text[start, end) with point findings (chips) into a container.
+  function renderRun(container, text, start, end, findings) {
+    var slice = text.slice(start, end);
+    var local = findings.filter(function (f) { return f.index >= start && f.index < end; })
+      .map(function (f) { var c = {}; for (var k in f) c[k] = f[k]; c.index = f.index - start; return c; });
+    G.segments(slice, local).forEach(function (seg) {
+      if (seg.type === 'text') container.appendChild(document.createTextNode(seg.value));
+      else container.appendChild(chipFor(seg.finding));
+    });
+  }
+
   function renderReveal(result) {
     reveal.textContent = '';
     if (!result.input) return;
+    var text = result.input;
     var findings = result.findings;
     if (revealTypo.checked) {
       // Non-keyboard marks are shown for punctuation and symbols; emoji and letters stay readable as themselves.
-      var nk = G.analyzeNonKeyboard(result.input, readOptions()).filter(function (f) {
+      var nk = G.analyzeNonKeyboard(text, readOptions()).filter(function (f) {
         return f.category !== 'emoji' && f.category !== 'letter';
       });
       findings = findings.concat(nk).sort(function (a, b) { return a.index - b.index; });
     }
+    var ranges = (revealTells.checked && lastTells) ? T.highlights(lastTells) : [];
     var frag = document.createDocumentFragment();
-    G.segments(result.input, findings).forEach(function (seg) {
-      if (seg.type === 'text') { frag.appendChild(document.createTextNode(seg.value)); return; }
-      var f = seg.finding;
-      var m;
-      if (f.group === 'nk') {
-        m = el('mark', 'chip typo' + (f.action === 'keep' ? ' kept' : ''));
-        m.appendChild(el('span', 'g', f.char));
-        m.appendChild(document.createTextNode(f.code));
-        m.title = nkLabel(f) + ' ' + f.code + (f.action === 'rewrite' ? ' (now ' + f.replacement + ')' : f.action === 'remove' ? ' (removed)' : ' (kept)');
-      } else {
-        m = el('mark', 'chip ' + (f.action === 'keep' ? 'keep' : f.action === 'space' ? 'space' : ''), f.abbr);
-        m.title = titleCase(f.name) + ' ' + f.code + (f.action === 'keep' ? ' (kept)' : '');
-      }
-      frag.appendChild(m);
+    var pos = 0;
+    ranges.forEach(function (r) {
+      if (r.index < pos) return;
+      renderRun(frag, text, pos, r.index, findings);
+      var span = el('span', 'tellmark');
+      span.title = r.label;
+      renderRun(span, text, r.index, r.index + r.length, findings);
+      frag.appendChild(span);
+      pos = r.index + r.length;
     });
+    renderRun(frag, text, pos, text.length, findings);
     reveal.appendChild(frag);
+  }
+
+  // ---- writing tells ---------------------------------------------------
+  var lastTells = null;
+  function renderTells(report) {
+    tellsBody.textContent = '';
+    if (!report.words) {
+      tellsLede.textContent = 'Patterns readers and statistical detectors associate with AI drafts.';
+      tellsBody.appendChild(el('div', 'tells-empty', 'Paste something to check its rhythm, vocabulary, and stock phrasing.'));
+      return;
+    }
+    tellsLede.textContent = '';
+    var v = el('span', 'verdict level-' + report.verdictLevel, report.verdict);
+    tellsLede.appendChild(v);
+    tellsLede.appendChild(document.createTextNode(
+      report.flagged + ' of ' + report.tells.length + ' checks flagged in ' + fmt(report.words) + ' words and ' + plural(report.sentences, 'sentence') + '.'));
+
+    var flagged = report.tells.filter(function (t) { return t.severity > 0; })
+      .sort(function (a, b) { return b.severity - a.severity || b.count - a.count; });
+    var passed = report.tells.filter(function (t) { return t.severity === 0; });
+
+    if (flagged.length) {
+      var ul = el('ul', 'tells');
+      flagged.forEach(function (t) {
+        var li = el('li', 'tell sev-' + t.severity);
+        var dot = el('span', 'sev'); dot.title = t.severityLabel; li.appendChild(dot);
+        li.appendChild(el('b', '', t.label));
+        li.appendChild(el('span', 'count', t.count ? fmt(t.count) + (t.per100 ? ' / ' + t.per100.toFixed(1) + ' per 100 words' : '') : ''));
+        li.appendChild(el('p', 'why', t.detail || t.blurb));
+        if (t.matches.length) {
+          var eg = el('p', 'eg');
+          var seen = {};
+          var shown = 0;
+          for (var i = 0; i < t.matches.length && shown < 4; i++) {
+            var k = t.matches[i].text.toLowerCase().replace(/\s+/g, ' ');
+            if (seen[k]) continue;
+            seen[k] = true;
+            if (shown) eg.appendChild(document.createTextNode(' '));
+            eg.appendChild(el('q', '', t.matches[i].text.replace(/\s+/g, ' ')));
+            shown++;
+          }
+          var more = t.matches.length - shown;
+          if (more > 0) eg.appendChild(document.createTextNode(' and ' + more + ' more'));
+          li.appendChild(eg);
+        }
+        if (t.advice) {
+          var fix = el('p', 'fix');
+          fix.appendChild(el('b', '', 'Fix'));
+          fix.appendChild(document.createTextNode(t.advice));
+          li.appendChild(fix);
+        }
+        ul.appendChild(li);
+      });
+      tellsBody.appendChild(ul);
+    }
+    if (passed.length) {
+      var pp = el('p', 'tells-passed');
+      pp.appendChild(el('b', '', 'Passed: '));
+      pp.appendChild(document.createTextNode(passed.map(function (t) { return t.label.toLowerCase(); }).join(', ') + '.'));
+      tellsBody.appendChild(pp);
+    }
   }
 
   var lastResult = null;
@@ -689,6 +846,8 @@
     }
 
     renderLedger(result);
+    lastTells = T.analyzeTells(text);
+    renderTells(lastTells);
     if (!revealPanel.hidden) renderReveal(result);
   }
 
@@ -713,6 +872,7 @@
   tabEdit.addEventListener('click', function () { showTab('edit'); input.focus(); });
   tabReveal.addEventListener('click', function () { showTab('reveal'); });
   revealTypo.addEventListener('change', function () { if (lastResult) renderReveal(lastResult); });
+  revealTells.addEventListener('change', function () { if (lastResult) renderReveal(lastResult); });
 
   $('btn-sample').addEventListener('click', function () { input.value = SAMPLE; run(); showTab('reveal'); });
   $('btn-clear').addEventListener('click', function () { input.value = ''; run(); showTab('edit'); input.focus(); });

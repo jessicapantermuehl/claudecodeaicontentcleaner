@@ -5,6 +5,7 @@
  *
  *   ghost-ink [options] [file]        clean a file (or stdin) and print the result
  *   ghost-ink --report [file]         list hidden characters without printing cleaned text
+ *   ghost-ink --tells [file]          report writing tells (patterns associated with AI drafts)
  *
  * Options:
  *   --em-dash <off|hyphen|comma>   how to rewrite em dashes (default: hyphen)
@@ -26,6 +27,7 @@
 const fs = require('fs');
 const path = require('path');
 const GhostInk = require('../cleaner.js');
+const Tells = require('../tells.js');
 
 function usage() {
   const src = fs.readFileSync(__filename, 'utf8');
@@ -34,12 +36,13 @@ function usage() {
 }
 
 function parseArgs(argv) {
-  const opts = { options: {}, report: false, json: false, output: null, file: null };
+  const opts = { options: {}, report: false, tells: false, json: false, output: null, file: null };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     switch (a) {
       case '-h': case '--help': console.log(usage()); process.exit(0); break;
       case '--report': opts.report = true; break;
+      case '--tells': opts.tells = true; break;
       case '--json': opts.json = true; break;
       case '-o': case '--output': opts.output = argv[++i]; break;
       case '--em-dash': opts.options.emDash = argv[++i]; break;
@@ -128,9 +131,30 @@ function report(result) {
   return lines.join('\n');
 }
 
+function tellsReport(text) {
+  const r = Tells.analyzeTells(text);
+  const lines = [r.verdict + '. ' + r.flagged + ' of ' + r.tells.length + ' checks flagged in ' + r.words + ' words.', ''];
+  for (const t of r.tells) {
+    if (t.severity === 0) continue;
+    lines.push('[' + t.severityLabel.toUpperCase().padEnd(6) + '] ' + t.label + (t.count ? ' (' + t.count + ')' : ''));
+    if (t.detail) lines.push('         ' + t.detail);
+    const examples = t.matches.slice(0, 3).map((m) => '"' + m.text.replace(/\s+/g, ' ') + '"');
+    if (examples.length) lines.push('         e.g. ' + examples.join(', '));
+    if (t.advice) lines.push('         Fix: ' + t.advice);
+  }
+  const passed = r.tells.filter((t) => t.severity === 0).map((t) => t.label);
+  if (passed.length) lines.push('', 'Passed: ' + passed.join(', ') + '.');
+  return lines.join('\n');
+}
+
 const args = parseArgs(process.argv.slice(2));
 const input = readInput(args.file);
 const result = GhostInk.clean(input, args.options);
+
+if (args.tells) {
+  console.log(tellsReport(input));
+  process.exit(0);
+}
 
 if (args.json) {
   const { findings, ...rest } = result;

@@ -22,11 +22,32 @@ Emoji sequences (families, flags, skin tones) and scripts that need zero-width j
 
 **Non-keyboard characters.** Everything else a keyboard cannot type is listed too, with a count and what will happen to it: curly quotes and apostrophes, em and en dashes, the ellipsis character, arrows, bullets, trademark signs, emoji, and accented letters. By default the typographic ones are rewritten as their keyboard equivalents (`"` `'` `-` `...` `->`), emoji and accented letters are kept, and both can be changed in settings. The output is verified until it contains keyboard characters only, apart from what you chose to keep.
 
+## Writing tells
+
+Below the character ledger, a second panel reads the text the way a statistical detector or a sharp editor would and flags twelve patterns associated with AI drafts. It measures and points. It never rewrites.
+
+| Check | What it looks for |
+| --- | --- |
+| Even sentence rhythm | Sentences of nearly the same length throughout (low burstiness) |
+| AI vocabulary | delve, elevate, leverage, unlock, tapestry, seamless, journey, and about sixty more |
+| Stock phrases | "in today's fast-paced world", "here's the thing", "you've got this", "consistency beats intensity" |
+| Not X, but Y framing | "It's not about doing more, it's about doing what lasts" |
+| Short rhetorical questions | "Sound familiar?", "The result?" |
+| Lists of three | "X, Y, and Z" over and over |
+| Punchy fragment triplets | "Small. Boring. Repeatable." |
+| Label-style openers | "Translation:", "The result:", "Enter:" |
+| Repeated sentence starters | Many sentences or paragraphs opening on the same word |
+| Dash-driven sentences | Em dashes splicing clauses together |
+| Stacked intensifiers | truly, genuinely, incredibly, absolutely |
+| Wrap-up closing paragraph | A final paragraph that restates the piece or signs off with a pep talk |
+
+Each flagged check shows a severity, a count per 100 words, examples from the text, and a one-line fix. The Reveal view underlines every match in place. From the command line, `ghost-ink --tells file.txt` prints the same report. The engine lives in `tells.js` and exposes `analyzeTells(text)` and `highlights(report)`.
+
 ## What this does and does not do
 
 Ghost Ink removes the character-level evidence that text was pasted from an AI tool: invisible watermarks, look-alike letters, and typography that no keyboard produces. That is what crawlers, plagiarism checkers, and paste inspectors can prove from the bytes themselves.
 
-It does not change the words. Statistical AI detectors score sentence rhythm, word choice, and predictability, and no character cleaner affects that. If the goal is text that reads as your own, the cleaned output still needs an editing pass in your voice.
+It does not change the words. Statistical AI detectors score sentence rhythm, word choice, and predictability, and no character cleaner affects that. The Writing tells panel shows you where those patterns are so an editing pass in your own voice knows where to go. Ghost Ink deliberately does not automate that pass: an automatic "humanizer" cannot run locally, cannot show its work, and makes copy worse.
 
 ## Use it
 
