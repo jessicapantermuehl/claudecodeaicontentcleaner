@@ -112,10 +112,12 @@
   /* about */
   .about{padding-top:clamp(14rem,40vw,26rem);padding-bottom:0}
   .about .band__bg{background-position:center top}
-  .about .band__wash{background:linear-gradient(to bottom,rgba(251,249,245,.05) 55%,rgba(251,249,245,.55))}
-  .about .card{max-width:920px;display:grid;grid-template-columns:.8fr 1.3fr;gap:clamp(1.5rem,4vw,3rem);margin-bottom:-4.5rem;position:relative;z-index:2}
+  .about .band__wash{background:linear-gradient(to bottom,rgba(251,249,245,.42) 0%,rgba(251,249,245,.42) 60%,rgba(251,249,245,.75))}
+  .about .card{max-width:760px;margin-bottom:-4.5rem;position:relative;z-index:2}
+  .about .card p + p{margin-top:.9rem}
+  .about .intro{margin-bottom:1.2rem}
   .about .card h2{text-align:left;font-size:clamp(2rem,1.6rem + 2vw,3rem);margin:0}
-  .about .who{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--walnut);margin-top:.6rem}
+  .about .who{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--walnut);margin-top:.5rem}
   .about .belief{margin-top:1rem;font-weight:700;color:var(--text)}
 
   /* final */
@@ -129,7 +131,6 @@
 
   @media (max-width:860px){
     .hero__grid,.inside__grid{grid-template-columns:1fr}
-    .about .card{grid-template-columns:1fr}
     .about{padding-top:clamp(22rem,70vw,24rem)}
     .about .band__bg{background-position:center top}
     .preview{min-height:380px;margin-top:1rem}
@@ -267,7 +268,7 @@
   <div class="band__wash"></div>
   <div class="wrap">
     <div class="card">
-      <div>
+      <div class="intro">
         <h2>Hi, I&rsquo;m Jessica.</h2>
         <p class="who">FNTP, CHHC &middot; Founder of Byrch</p>
       </div>
