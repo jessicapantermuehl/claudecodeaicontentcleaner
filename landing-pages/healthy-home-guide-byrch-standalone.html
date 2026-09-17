@@ -38,7 +38,8 @@
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;font-family:var(--body);font-size:.78rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;padding:1.05rem 1.9rem;border-radius:100px;border:1px solid transparent;background:var(--terracotta);color:var(--text);text-decoration:none;cursor:pointer;white-space:nowrap;transition:background .2s ease}
   .btn:hover{background:var(--terracotta-soft)}
   .btn:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
-  .btn--wide{width:100%}
+  .btn--wide{width:100%;white-space:normal;text-align:center;line-height:1.3}
+  .hero__grid > *,.inside__grid > *{min-width:0}
   .fine{font-size:.86rem;color:var(--driftwood);line-height:1.55}
 
   /* nav */
@@ -99,18 +100,11 @@
   .tablet{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:78%;background:#1C1008;border-radius:22px;padding:2.6% 2.6% 3.4%;box-shadow:0 28px 60px rgba(28,16,8,.3)}
   .tablet img{width:100%;height:auto;border-radius:10px;display:block}
 
-  /* byrch note + questions */
-  .gift{background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding-block:1.6rem;text-align:center}
-  .gift p{max-width:44rem;margin-inline:auto;font-size:.98rem}
-  .gift__lead{font-family:var(--display);font-size:1.3rem;color:var(--text);margin-bottom:.35rem !important}
-  .qa{padding-block:clamp(7rem,14vw,9.5rem) 0;display:grid;grid-template-columns:1fr 1fr;gap:clamp(1.5rem,4vw,3rem);max-width:920px}
-  .qa h3{margin-bottom:.4rem}
-  @media (max-width:860px){.qa{grid-template-columns:1fr}}
-
   /* permission strip */
   .permit{padding-block:clamp(2.5rem,6vw,4rem);text-align:center}
   .permit h2{font-size:clamp(1.5rem,1.2rem + 1.4vw,2.2rem);max-width:30ch;margin-inline:auto}
   .permit p{max-width:44rem;margin:1rem auto 0}
+  .permit p + p:not(.lines){margin-top:.6rem}
   .permit .lines{margin-top:1rem;font-family:var(--display);font-size:1.15rem;color:var(--walnut);line-height:1.7}
 
   /* about */
@@ -125,7 +119,7 @@
   .about .belief{margin-top:1rem;font-weight:700;color:var(--text)}
 
   /* final */
-  .final{background:var(--linen);padding-top:clamp(3rem,7vw,5.5rem);padding-bottom:clamp(3rem,7vw,5.5rem)}
+  .final{background:var(--linen);padding-top:clamp(7rem,14vw,9.5rem);padding-bottom:clamp(3rem,7vw,5.5rem)}
   .final .form-card{max-width:560px;margin-inline:auto}
   .final .fine{font-style:italic}
 
@@ -150,10 +144,9 @@
 <section class="hero">
   <div class="wrap hero__grid">
     <div class="hero__copy">
-      <p class="eyebrow">A free course from Jessica Pantermuehl, FNTP, CHHC, Founder of Byrch</p>
+      <p class="eyebrow">Complimentary access for Byrch customers</p>
       <h1>The Healthy Home Guide</h1>
-      <p class="lead">A practical, room-by-room course for reducing unnecessary environmental exposures at home, without trying to create a perfectly &ldquo;nontoxic&rdquo; life.</p>
-      <p class="meta">Three modules. Self-paced. Yours to keep.</p>
+      <p class="lead">A practical, step-by-step video program for reducing unnecessary environmental exposures at home, without trying to create a perfectly &ldquo;nontoxic&rdquo; life.</p>
     </div>
 
     <!-- GHL: replace this form with your GoHighLevel form embed, or point the action at your funnel's form endpoint. Keep the field ids so styling carries over. -->
@@ -166,18 +159,10 @@
         <label for="hero-email">Email</label>
         <input id="hero-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
       </div>
-      <button class="btn btn--wide" type="submit">Start the free course &rarr;</button>
+      <button class="btn btn--wide" type="submit">Start the Healthy Home Guide &rarr;</button>
       <p class="fine">No cost, no credit card. Tell me where to send your access.</p>
       <p class="note">Preview only. Connect this form in GoHighLevel to send access.</p>
     </form>
-  </div>
-</section>
-
-<!-- BYRCH NOTE -->
-<section class="gift">
-  <div class="wrap">
-    <p class="gift__lead">This course is a gift for the Byrch community.</p>
-    <p>It&rsquo;s a program I charge for elsewhere, but if you came to me through Byrch, I want you to have it free. You won&rsquo;t find this offer linked publicly on my website or social channels. It&rsquo;s simply one more way I can help you support yourself beyond what comes in a bottle.</p>
   </div>
 </section>
 
@@ -190,19 +175,21 @@
       <h2>Your environment is part of your health, too.</h2>
       <p>Most of us think about wellness in terms of what we eat, how we exercise, how we sleep, and what we put on our skin.</p>
       <p>We rarely think about the ordinary environment surrounding all of it.</p>
-      <p>But we spend the vast majority of our lives indoors, and the Environmental Protection Agency notes that concentrations of some pollutants are often higher indoors than outdoors.</p>
+      <p>We spend about 90% of our lives indoors.</p>
+      <p>And according to the Environmental Protection Agency, concentrations of some pollutants indoors are often 2 to 5 times higher than they are outside.</p>
+      <p>Which means the environment inside our homes deserves a place in the wellness conversation, too.</p>
       <p>That doesn&rsquo;t mean your home is &ldquo;toxic.&rdquo; And it definitely doesn&rsquo;t mean you need to throw everything away.</p>
-      <p>It means your environment is <strong>one more foundation you can make more supportive</strong>, often through surprisingly small changes.</p>
+      <p>It just means your environment is <strong>one more part of the bigger picture</strong> &mdash; and there are practical ways to make it more supportive.</p>
       <p class="lead-in">This one&rsquo;s for you if&hellip;</p>
       <ul class="check">
         <li>You&rsquo;ve already paid attention to food and personal-care products and are wondering what else is actually worth considering</li>
         <li>You keep hearing words like &ldquo;toxins,&rdquo; &ldquo;VOCs,&rdquo; and &ldquo;endocrine disruptors&rdquo; and want someone to explain what deserves your attention <em>without</em> scaring you</li>
         <li>You want a healthier home but have no interest in throwing away everything you own</li>
         <li>You rent, live on a budget, or simply need recommendations that work in real life</li>
-        <li>You&rsquo;d love a straightforward checklist instead of another rabbit hole to research</li>
+        <li>You&rsquo;d love someone to help you separate what actually matters from everything you can stop worrying about</li>
       </ul>
-      <p class="lead-in">You just need to know what&rsquo;s worth your attention and what isn&rsquo;t. That&rsquo;s what this course is for.</p>
-      <div class="cta"><a class="btn" href="#signup">Send me the course &rarr;</a></div>
+      <p class="lead-in">You don&rsquo;t need to change everything. You just need to know what&rsquo;s worth changing.</p>
+      <div class="cta"><a class="btn" href="#signup">Get complimentary access &rarr;</a></div>
     </div>
   </div>
 </section>
@@ -212,34 +199,37 @@
   <div class="wrap inside__grid">
     <div class="inside__copy">
       <h2>Here&rsquo;s what we&rsquo;ll walk through together</h2>
-      <p>Short video lessons and printable checklists, in the order that makes the most sense.</p>
+      <p>I&rsquo;ll walk you through it step by step, starting with what&rsquo;s actually worth paying attention to and then moving room by room through your home.</p>
       <ol class="modules">
         <li>
           <b>01</b>
           <div>
             <h3>Know what you&rsquo;re working with</h3>
-            <p>Make sense of the exposures you hear about all the time: what they actually are, where they show up in a home, and which ones truly deserve your attention.</p>
+            <p>We&rsquo;ll start by making sense of the environmental exposures you hear about all the time &mdash; what they actually are, where they tend to show up in a home, and which ones deserve the most attention.</p>
+            <p>The goal isn&rsquo;t to give you a longer list of things to worry about. It&rsquo;s to help you understand what matters enough to do something about.</p>
           </div>
         </li>
         <li>
           <b>02</b>
           <div>
             <h3>The small changes that do most of the work</h3>
-            <p>Go through the cleaners you already own, improve ventilation and indoor air, know what to consider in air and water filtration, and set a realistic weekly rhythm.</p>
+            <p>Next, we&rsquo;ll look at some of the biggest opportunities in your everyday environment.</p>
+            <p>We&rsquo;ll go through the cleaners you already own, indoor air and ventilation, what to consider when it comes to air and water filtration, and simple habits that can make your home more supportive without turning your life upside down.</p>
           </div>
         </li>
         <li>
           <b>03</b>
           <div>
             <h3>Room by room</h3>
-            <p>Practical guidance and printable checklists for your bedroom, kitchen, bathroom, and living spaces, plus what&rsquo;s perfectly fine to leave alone for now.</p>
+            <p>Then we&rsquo;ll take everything you&rsquo;ve learned and apply it throughout your home.</p>
+            <p>You&rsquo;ll get practical guidance and printable checklists for your bedroom, kitchen, bathroom, and living spaces &mdash; including what to look at first, what can wait, and what&rsquo;s perfectly fine to leave alone for now.</p>
           </div>
         </li>
       </ol>
       <ul class="ticks">
-        <li>Free, with no credit card</li>
-        <li>Move through it in an afternoon, or one lesson at a time</li>
-        <li>Yours to come back to whenever you replace something</li>
+        <li>Complimentary access</li>
+        <li>Step-by-step video lessons + printable checklists</li>
+        <li>Lifetime access so you can come back whenever you need it</li>
       </ul>
     </div>
 
@@ -259,9 +249,10 @@
 
 <!-- PERMISSION -->
 <section class="permit wrap">
-  <h2>This is not a course about creating a perfect home.</h2>
-  <p>I don&rsquo;t have a perfectly &ldquo;nontoxic&rdquo; home, and I don&rsquo;t expect you to have one either. The goal is to understand your biggest opportunities and make changes gradually.</p>
-  <p class="lines">Replace one thing when it runs out.<br>Open a window when it makes sense.<br>Change one habit this month.</p>
+  <h2>This is not about creating a perfect home.</h2>
+  <p>I don&rsquo;t have a perfectly &ldquo;nontoxic&rdquo; home, and I don&rsquo;t expect you to have one either.</p>
+  <p>The goal is to understand which exposures are worth paying attention to, where your biggest opportunities are, and which changes make sense for your home, your budget, and your life.</p>
+  <p class="lines">Because a healthier home doesn&rsquo;t have to mean replacing everything.<br>It starts with knowing what matters.</p>
 </section>
 
 <!-- ABOUT -->
@@ -272,27 +263,16 @@
     <div class="card">
       <div class="intro">
         <h2>Hi, I&rsquo;m Jessica.</h2>
-        <p class="who">FNTP, CHHC &middot; Founder of Byrch</p>
+        <p class="who">Jessica Pantermuehl, FNTP, CHHC &middot; Founder of Byrch</p>
       </div>
       <div>
         <p>I spent years working with women as a <strong>Functional Nutritional Therapy Practitioner and board-certified holistic health coach</strong>, and one thing that work taught me is that our health rarely makes the most sense when we look at one symptom, food, product, or habit in isolation.</p>
-        <p>What we eat matters. How we digest and absorb it matters. Stress and sleep matter. And the environment we spend our days in belongs in that picture, too.</p>
+        <p>What we eat matters. How we digest and absorb it matters. Stress and sleep matter. What we put on our skin matters.</p>
+        <p>And the environment we spend our days in belongs in that picture, too.</p>
         <p class="belief">I believe wellness should leave you feeling more informed and empowered, not more afraid of your own home.</p>
-        <p>That&rsquo;s why I created the Healthy Home Guide: to show you what matters, what you can actually do about it, and what you can stop worrying about.</p>
+        <p>That&rsquo;s why I created the Healthy Home Guide: to help you understand what deserves your attention, what you can actually do about it, and what you can stop worrying about.</p>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- BYRCH QUESTIONS -->
-<section class="qa wrap">
-  <div class="qa__item">
-    <h3>Is this about hair?</h3>
-    <p>Not specifically. You came to me through Byrch, but your hair doesn&rsquo;t exist separately from the rest of you. The Healthy Home Guide is about creating a more supportive everyday environment for your whole body. Think of it as one more piece of the larger inside-out approach I teach.</p>
-  </div>
-  <div class="qa__item">
-    <h3>Why is this free?</h3>
-    <p>Because you came to me through Byrch. This is a course I normally charge for, but I think learning how to make your home more supportive should be accessible, and I wanted the Byrch community to have it.</p>
   </div>
 </section>
 
@@ -301,8 +281,8 @@
   <div class="wrap">
     <!-- GHL: replace this form with your GoHighLevel form embed (same form as the hero). -->
     <form class="form-card" id="final-form" novalidate>
-      <h2>Get the Healthy Home Guide free</h2>
-      <p class="sub">Tell me where to send your access link and I&rsquo;ll get it over to you right away.</p>
+      <h2>Get the Healthy Home Guide</h2>
+      <p class="sub"><strong>As a Byrch customer, you have complimentary access.</strong><br>Tell me where to send your login details and I&rsquo;ll get everything over to you right away.</p>
       <div class="field">
         <label for="final-name">First name</label>
         <input id="final-name" name="first_name" type="text" autocomplete="given-name" placeholder="Your first name" required>
@@ -311,8 +291,8 @@
         <label for="final-email">Email</label>
         <input id="final-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
       </div>
-      <button class="btn btn--wide" type="submit">Start my free course &rarr;</button>
-      <p class="fine">You&rsquo;ll get access to the complete course and can return to it whenever you need it. You&rsquo;ll also receive practical functional nutrition education from me at Holistic Jessica. Unsubscribe anytime.</p>
+      <button class="btn btn--wide" type="submit">Start the Healthy Home Guide &rarr;</button>
+      <p class="fine">No cost. No credit card. Lifetime access.</p>
       <p class="note">Preview only. Connect this form in GoHighLevel to send access.</p>
     </form>
   </div>
